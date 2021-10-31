@@ -1,7 +1,7 @@
 package com.notenoughrunes.ui;
 
-import net.runelite.client.ui.PluginPanel;
+import javax.swing.JPanel;
 
-public class NERUsesPanel extends PluginPanel
+class NERUsesPanel extends JPanel
 {
 }

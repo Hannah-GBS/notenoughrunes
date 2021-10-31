@@ -4,6 +4,9 @@ import com.google.inject.Provides;
 import com.notenoughrunes.ui.NERPanel;
 import java.awt.image.BufferedImage;
 import javax.inject.Inject;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
@@ -32,7 +35,11 @@ public class NotEnoughRunesPlugin extends Plugin
 	@Inject
 	private ClientToolbar clientToolbar;
 
+	@Getter(AccessLevel.PACKAGE)
 	private NavigationButton navButton;
+
+	@Getter(AccessLevel.PACKAGE)
+	@Setter(AccessLevel.PACKAGE)
 	private NERPanel nerPanel;
 
 	@Override
