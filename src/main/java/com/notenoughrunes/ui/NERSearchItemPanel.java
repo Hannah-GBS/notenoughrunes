@@ -10,17 +10,19 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Inject;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.ColorScheme;
-import net.runelite.client.util.AsyncBufferedImage;
 
+@Slf4j
 class NERSearchItemPanel extends JPanel
 {
 	private static final Dimension ICON_SIZE = new Dimension(32, 32);
 
-	NERSearchItemPanel(NERItem item)
+	NERSearchItemPanel(NERItem item, NERPanel mainPanel)
 	{
 		BorderLayout layout = new BorderLayout();
 		layout.setHgap(5);
@@ -52,6 +54,13 @@ class NERSearchItemPanel extends JPanel
 					matchComponentBackground(panel, background);
 				}
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e)
+			{
+				log.info("Clicked " + item.getName());
+				mainPanel.displayItem(item);
 			}
 
 		};

@@ -6,10 +6,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.font.TextAttribute;
-import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
-import javax.inject.Inject;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -19,7 +17,6 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.components.materialtabs.MaterialTab;
 import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
-import net.runelite.client.util.ImageUtil;
 
 
 class NERItemPanel extends JPanel
@@ -36,10 +33,12 @@ class NERItemPanel extends JPanel
 
 	@Getter
 	private final NERUsesPanel usesPanel;
+	public NERItem item;
 
 
-	NERItemPanel(String itemName)
+	NERItemPanel(NERItem item)
 	{
+		this.item = item;
 		this.sourcesPanel = new NERSourcesPanel();
 		this.usesPanel = new NERUsesPanel();
 
@@ -47,10 +46,9 @@ class NERItemPanel extends JPanel
 		setBorder(new EmptyBorder(0, 10, 10, 10));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
-		BufferedImage itemImage = ImageUtil.loadImageResource(getClass(), "arrow_shaft.png");
 		JLabel itemIcon = new JLabel();
 		itemIcon.setPreferredSize(ICON_SIZE);
-		itemIcon.setIcon(new ImageIcon(itemImage));
+		itemIcon.setIcon(new ImageIcon(item.getIcon()));
 
 		JPanel itemInfoRight = new JPanel(new GridLayout(2, 1));
 		JLabel itemNameLabel = new JLabel();
@@ -62,7 +60,7 @@ class NERItemPanel extends JPanel
 		itemNameLabel.setFont(FontManager.getRunescapeBoldFont().deriveFont(attributes).deriveFont(20f));
 		itemNameLabel.setMaximumSize(new Dimension(0, 0));
 		itemNameLabel.setPreferredSize(new Dimension(0, 0));
-		itemNameLabel.setText(itemName);
+		itemNameLabel.setText(item.getName());
 		itemInfoRight.add(itemNameLabel);
 
 		JLabel itemDesc = new JLabel();
@@ -71,7 +69,7 @@ class NERItemPanel extends JPanel
 		itemDesc.setHorizontalAlignment(JLabel.CENTER);
 		itemDesc.setMaximumSize(new Dimension(0, 0));
 		itemDesc.setPreferredSize(new Dimension(0, 0));
-		itemDesc.setText("A wooden arrow shaft");
+		itemDesc.setText("figure out description loading pls");
 		itemInfoRight.add(itemDesc);
 
 		BorderLayout itemLayout = new BorderLayout();

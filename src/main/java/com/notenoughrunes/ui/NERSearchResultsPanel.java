@@ -42,11 +42,13 @@ class NERSearchResultsPanel extends JPanel
 
 
 
+
+
+	private final List<NERItem> results = new ArrayList<>();
 	private final Client client;
 	private final ClientThread clientThread;
 	private final ItemManager itemManager;
-
-	private final List<NERItem> results = new ArrayList<>();
+	private final NERPanel parentPanel;
 
 
 	@Value
@@ -57,13 +59,12 @@ class NERSearchResultsPanel extends JPanel
 		private final short[] texturesToReplace;
 	}
 
-	@Inject
-	NERSearchResultsPanel(Client client, ClientThread clientThread, ItemManager itemManager)
+	NERSearchResultsPanel(Client client, ClientThread clientThread, ItemManager itemManager, NERPanel parentPanel)
 	{
 		this.client = client;
 		this.clientThread = clientThread;
 		this.itemManager = itemManager;
-
+		this.parentPanel = parentPanel;
 		setLayout(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
@@ -167,8 +168,6 @@ class NERSearchResultsPanel extends JPanel
 				}
 			}
 
-
-			log.info(results.toString());
 			if (results.isEmpty())
 			{
 				searchBar.setIcon(IconTextField.Icon.ERROR);
@@ -198,7 +197,7 @@ class NERSearchResultsPanel extends JPanel
 			{
 				break;
 			}
-			NERSearchItemPanel panel = new NERSearchItemPanel(nerItem);
+			NERSearchItemPanel panel = new NERSearchItemPanel(nerItem, parentPanel);
 			if (index++ > 0)
 			{
 				JPanel marginWrapper = new JPanel(new BorderLayout());
@@ -214,6 +213,5 @@ class NERSearchResultsPanel extends JPanel
 
 			constraints.gridy++;
 		}
-		log.info(results.toString());
 	}
 }
