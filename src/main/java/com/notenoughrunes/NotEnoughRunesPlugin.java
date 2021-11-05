@@ -1,16 +1,19 @@
 package com.notenoughrunes;
 
+import com.google.gson.Gson;
 import com.google.inject.Provides;
+import com.notenoughrunes.types.DataFetcher;
+import com.notenoughrunes.types.NERData;
+import com.notenoughrunes.types.NERInfoItem;
 import com.notenoughrunes.ui.NERPanel;
 import java.awt.image.BufferedImage;
+import java.util.Set;
 import javax.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
-import net.runelite.api.GameState;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -35,6 +38,11 @@ public class NotEnoughRunesPlugin extends Plugin
 	@Inject
 	private ClientToolbar clientToolbar;
 
+	@Inject
+	private Gson gson;
+
+	private NERData nerData;
+
 	@Getter(AccessLevel.PACKAGE)
 	private NavigationButton navButton;
 
@@ -55,6 +63,8 @@ public class NotEnoughRunesPlugin extends Plugin
 			.build();
 
 		clientToolbar.addNavigation(navButton);
+
+		nerData = new NERData(new DataFetcher());
 	}
 
 	@Override

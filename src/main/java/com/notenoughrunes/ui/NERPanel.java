@@ -54,7 +54,8 @@ public class NERPanel extends PluginPanel
 		if (prevItemPanel != null)
 		{
 			log.info("previous item exists");
-			SwingUtilities.invokeLater(() -> {
+			SwingUtilities.invokeLater(() ->
+			{
 				itemPanel = new NERItemPanel(prevItemPanel.item);
 				remove(searchResultsPanel);
 				add(itemPanel, BorderLayout.CENTER);
@@ -77,7 +78,8 @@ public class NERPanel extends PluginPanel
 		{
 			log.info("setting previous item");
 			remove(itemPanel);
-			SwingUtilities.invokeLater(() -> {
+			SwingUtilities.invokeLater(() ->
+			{
 				prevItemPanel = new NERItemPanel(itemPanel.item);
 				this.updateUI();
 				itemPanel = null;
