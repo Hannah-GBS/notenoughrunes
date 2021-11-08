@@ -1,14 +1,18 @@
 package com.notenoughrunes.ui;
 
 import com.google.common.base.Strings;
+import com.notenoughrunes.NotEnoughRunesPlugin;
+import com.notenoughrunes.types.NERData;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import static java.lang.Integer.parseInt;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -44,6 +48,7 @@ class NERSearchResultsPanel extends JPanel
 
 
 	private final List<NERItem> results = new ArrayList<>();
+	private final NotEnoughRunesPlugin plugin;
 	private final Client client;
 	private final ClientThread clientThread;
 	private final ItemManager itemManager;
@@ -53,13 +58,14 @@ class NERSearchResultsPanel extends JPanel
 	@Value
 	private static class ItemIcon
 	{
-		private final int modelId;
-		private final short[] colorsToReplace;
-		private final short[] texturesToReplace;
+		int modelId;
+		short[] colorsToReplace;
+		short[] texturesToReplace;
 	}
 
-	NERSearchResultsPanel(Client client, ClientThread clientThread, ItemManager itemManager, NERPanel parentPanel)
+	NERSearchResultsPanel(NotEnoughRunesPlugin plugin, Client client, ClientThread clientThread, ItemManager itemManager, NERPanel parentPanel)
 	{
+		this.plugin = plugin;
 		this.client = client;
 		this.clientThread = clientThread;
 		this.itemManager = itemManager;
@@ -143,29 +149,16 @@ class NERSearchResultsPanel extends JPanel
 		String search = searchBar.getText();
 		results.clear();
 
-		Set<ItemIcon> itemIcons = new HashSet<>();
 		this.clientThread.invokeLater(() ->
 		{
-			for (int i = 0; i < this.client.getItemCount() && results.size() < MAX_RESULTS; i++)
-			{
-				ItemComposition itemComposition = this.itemManager.getItemComposition(this.itemManager.canonicalize(i));
-				String name = itemComposition.getName().toLowerCase();
-
-				if (!name.equals("null") && name.contains(search) && results.stream().noneMatch(s -> s.getItemId() == itemComposition.getId()))
+			plugin.getNerData().getItemInfoData().forEach((itemInfo) -> {
+				if (itemInfo.getName().toLowerCase().contains(search.toLowerCase()) && results.size() < MAX_RESULTS && results.stream().noneMatch(s -> s.getInfoItem().getItemID() == itemInfo.getItemID()))
 				{
-					ItemIcon itemIcon = new ItemIcon(itemComposition.getInventoryModel(),
-						itemComposition.getColorToReplaceWith(), itemComposition.getTextureToReplaceWith());
-					if (itemIcons.contains(itemIcon))
-					{
-						continue;
-					}
-
-					itemIcons.add(itemIcon);
-
-					AsyncBufferedImage itemImage = this.itemManager.getImage(itemComposition.getId());
-					results.add(new NERItem(itemImage, itemComposition.getName(), itemComposition.getId(), itemComposition.isMembers()));
+					AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
+					results.add(new NERItem(itemImage, itemInfo));
 				}
-			}
+			});
+
 
 			if (results.isEmpty())
 			{
@@ -209,6 +202,7 @@ class NERSearchResultsPanel extends JPanel
 			{
 				searchItemsPanel.add(panel, constraints);
 			}
+			searchItemsPanel.updateUI();
 
 			constraints.gridy++;
 		}

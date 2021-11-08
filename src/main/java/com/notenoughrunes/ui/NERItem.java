@@ -1,5 +1,6 @@
 package com.notenoughrunes.ui;
 
+import com.notenoughrunes.types.NERInfoItem;
 import lombok.Value;
 import net.runelite.client.util.AsyncBufferedImage;
 
@@ -7,7 +8,5 @@ import net.runelite.client.util.AsyncBufferedImage;
 class NERItem
 {
 	private final AsyncBufferedImage icon;
-	private final String name;
-	private final int itemId;
-	private final boolean isMembers;
+	private final NERInfoItem infoItem;
 }

@@ -26,7 +26,7 @@ class NERSearchItemPanel extends JPanel
 		BorderLayout layout = new BorderLayout();
 		layout.setHgap(5);
 		setLayout(layout);
-		setToolTipText(item.getName());
+		setToolTipText(item.getInfoItem().getGroup());
 		setBackground(ColorScheme.DARKER_GRAY_COLOR);
 
 		Color background = getBackground();
@@ -58,7 +58,7 @@ class NERSearchItemPanel extends JPanel
 			@Override
 			public void mouseReleased(MouseEvent e)
 			{
-				log.info("Clicked " + item.getName());
+				log.info("Clicked " + item.getInfoItem().getName());
 				mainPanel.displayItem(item);
 			}
 
@@ -85,7 +85,7 @@ class NERSearchItemPanel extends JPanel
 		itemName.setForeground(Color.WHITE);
 		itemName.setMaximumSize(new Dimension(0, 0));
 		itemName.setPreferredSize(new Dimension(0, 0));
-		itemName.setText(item.getName());
+		itemName.setText(item.getInfoItem().getName());
 		rightPanel.add(itemName);
 
 		add(rightPanel, BorderLayout.CENTER);

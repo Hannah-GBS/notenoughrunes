@@ -1,6 +1,8 @@
 package com.notenoughrunes.ui;
 
 import com.google.common.base.Strings;
+import com.notenoughrunes.NotEnoughRunesConfig;
+import com.notenoughrunes.NotEnoughRunesPlugin;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.concurrent.ScheduledExecutorService;
@@ -19,7 +21,10 @@ import net.runelite.client.ui.components.IconTextField;
 @Slf4j
 public class NERPanel extends PluginPanel
 {
+	private final NotEnoughRunesPlugin plugin;
+	private final NotEnoughRunesConfig config;
 	private final IconTextField searchBar = new IconTextField();
+
 	private NERItemPanel itemPanel;
 	private NERItemPanel prevItemPanel;
 
@@ -27,10 +32,12 @@ public class NERPanel extends PluginPanel
 	private final NERSearchResultsPanel searchResultsPanel;
 
 	@Inject
-	private NERPanel(ScheduledExecutorService executor, Client client, ClientThread clientThread, ItemManager itemManager)
+	private NERPanel(ScheduledExecutorService executor, NotEnoughRunesPlugin plugin, NotEnoughRunesConfig config, Client client, ClientThread clientThread, ItemManager itemManager)
 	{
 		super(false);
-		this.searchResultsPanel = new NERSearchResultsPanel(client, clientThread, itemManager, this);
+		this.plugin = plugin;
+		this.config = config;
+		this.searchResultsPanel = new NERSearchResultsPanel(plugin, client, clientThread, itemManager, this);
 
 		setLayout(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);

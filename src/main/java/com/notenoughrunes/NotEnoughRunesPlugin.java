@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.util.Set;
 import javax.inject.Inject;
 import lombok.AccessLevel;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,7 @@ public class NotEnoughRunesPlugin extends Plugin
 	@Inject
 	private Gson gson;
 
+	@Getter
 	private NERData nerData;
 
 	@Getter(AccessLevel.PACKAGE)
