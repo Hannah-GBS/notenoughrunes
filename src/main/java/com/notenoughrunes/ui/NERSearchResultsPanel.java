@@ -43,17 +43,12 @@ class NERSearchResultsPanel extends JPanel
 	private final JPanel centerPanel = new JPanel(cardLayout);
 	private final PluginErrorPanel errorPanel = new PluginErrorPanel();
 
-
-
-
-
 	private final List<NERItem> results = new ArrayList<>();
 	private final NotEnoughRunesPlugin plugin;
 	private final Client client;
 	private final ClientThread clientThread;
 	private final ItemManager itemManager;
 	private final NERPanel parentPanel;
-
 
 	@Value
 	private static class ItemIcon
@@ -73,7 +68,6 @@ class NERSearchResultsPanel extends JPanel
 		setLayout(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
-		/*  The main container, this holds the search bar and the center panel */
 		JPanel container = new JPanel();
 		container.setLayout(new BorderLayout(5, 5));
 		container.setBorder(new EmptyBorder(5, 2, 0, 2));

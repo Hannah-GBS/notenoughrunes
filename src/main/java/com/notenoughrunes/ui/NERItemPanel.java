@@ -44,7 +44,7 @@ class NERItemPanel extends JPanel
 		this.sourcesPanel = new NERSourcesPanel();
 		this.usesPanel = new NERUsesPanel();
 
-		setLayout(new BorderLayout(5, 5));
+		setLayout(new BorderLayout());
 		setBorder(new EmptyBorder(0, 10, 10, 10));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
@@ -91,6 +91,8 @@ class NERItemPanel extends JPanel
 		itemInfo.add(itemIcon, BorderLayout.LINE_START);
 		itemInfo.add(itemInfoRight, BorderLayout.CENTER);
 
+
+
 		sourcesTab = new MaterialTab("Sources", tabGroup, sourcesPanel);
 		usesTab = new MaterialTab("Uses", tabGroup, usesPanel);
 
@@ -99,7 +101,12 @@ class NERItemPanel extends JPanel
 		tabGroup.addTab(usesTab);
 		tabGroup.select(sourcesTab);
 
+		JPanel tabContainer = new JPanel();
+		tabContainer.setLayout(new BorderLayout());
+		tabContainer.add(tabGroup, BorderLayout.NORTH);
+		tabContainer.add(tabDisplay, BorderLayout.CENTER);
+
 		add(itemInfo, BorderLayout.NORTH);
-		add(tabGroup, BorderLayout.CENTER);
+		add(tabContainer, BorderLayout.CENTER);
 	}
 }
