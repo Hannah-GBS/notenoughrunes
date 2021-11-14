@@ -4,8 +4,8 @@ import com.notenoughrunes.types.NERData;
 import com.notenoughrunes.types.NERProductionMaterial;
 import com.notenoughrunes.types.NERProductionRecipe;
 import com.notenoughrunes.types.NERProductionSkill;
-import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import static java.awt.GridBagConstraints.CENTER;
 import static java.awt.GridBagConstraints.EAST;
@@ -13,10 +13,12 @@ import static java.awt.GridBagConstraints.HORIZONTAL;
 import static java.awt.GridBagConstraints.LINE_END;
 import static java.awt.GridBagConstraints.LINE_START;
 import static java.awt.GridBagConstraints.NONE;
-import static java.awt.GridBagConstraints.REMAINDER;
 import static java.awt.GridBagConstraints.WEST;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.font.TextAttribute;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -24,7 +26,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
-import net.runelite.api.Client;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
@@ -92,10 +93,14 @@ public class NERRecipePanel extends JPanel
 		setItemImage(outputIcon, recipe.getOutput().getName());
 		add(outputIcon, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, CENTER, NONE, new Insets(0, 8, 0, 0), 4, 4));
 		add(new JLabel(recipe.getOutput().getName()), new GridBagConstraints(1, row, 2, 1, 1.0, 0.0, WEST, NONE, NO_INSETS, 4, 4));
-		add(new JLabel("x" + recipe.getOutput().getQuantity()), new GridBagConstraints(3, row++, 1, 1, 0.0, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
+
+		JLabel quantityLabel = new JLabel("x" + recipe.getOutput().getQuantity());
+		add(quantityLabel, new GridBagConstraints(3, row++, 1, 1, 0.0, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
 		if (recipe.getOutput().getQuantityNote() != null)
 		{
-			add(new JLabel(String.format("<html><body style=\"text-align:center;\">%s</body></html> ", recipe.getOutput().getQuantityNote().replaceAll("[\\[\\]]|<[^>]*>",""))), new GridBagConstraints(0, row++, REMAINDER, 1, 1.0, 0.0, CENTER, HORIZONTAL, NO_INSETS, 4, 4));
+			quantityLabel.setText(quantityLabel.getText() + "\uD83D\uDEC8");
+			String tooltipText = recipe.getOutput().getQuantityNote().replaceAll("[\\[\\]]|<[^>]*>", "");
+			addTooltip(quantityLabel, String.format("<html><p width=\"%d\">%s</p></html>", 200, tooltipText));
 		}
 	}
 
@@ -111,6 +116,19 @@ public class NERRecipePanel extends JPanel
 			AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemId));
 			SwingUtilities.invokeLater(() -> label.setIcon(new ImageIcon(itemImage)));
 		});
+	}
+
+	private void addTooltip(JLabel toUnderline, String tooltip)
+	{
+		// add underline to text
+		Font f = toUnderline.getFont();
+		Map<TextAttribute, Object> attributes = new HashMap<>(f.getAttributes());
+		attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_DOTTED);
+		toUnderline.setFont(f.deriveFont(attributes));
+		toUnderline.setText(toUnderline.getText());
+
+		// create hover tooltip
+		toUnderline.setToolTipText(tooltip);
 	}
 
 }
