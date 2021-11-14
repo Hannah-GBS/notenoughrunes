@@ -15,4 +15,8 @@ public class NERProductionOutput
 	@Nullable
 	@SerializedName("subtxt")
 	private final String subtext;
+
+	@Nullable
+	@SerializedName("quantitynote")
+	private final String quantityNote;
 }

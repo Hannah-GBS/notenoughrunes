@@ -3,6 +3,7 @@ package com.notenoughrunes.ui;
 import com.google.common.base.Strings;
 import com.notenoughrunes.NotEnoughRunesConfig;
 import com.notenoughrunes.NotEnoughRunesPlugin;
+import com.notenoughrunes.types.NERData;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.concurrent.ScheduledExecutorService;
@@ -24,6 +25,9 @@ public class NERPanel extends PluginPanel
 	private final NotEnoughRunesPlugin plugin;
 	private final NotEnoughRunesConfig config;
 	private final IconTextField searchBar = new IconTextField();
+	private final ClientThread clientThread;
+	private final ItemManager itemManager;
+	private final NERData nerData;
 
 	private NERItemPanel itemPanel;
 	private NERItemPanel prevItemPanel;
@@ -32,12 +36,15 @@ public class NERPanel extends PluginPanel
 	private final NERSearchResultsPanel searchResultsPanel;
 
 	@Inject
-	private NERPanel(ScheduledExecutorService executor, NotEnoughRunesPlugin plugin, NotEnoughRunesConfig config, Client client, ClientThread clientThread, ItemManager itemManager)
+	private NERPanel(ScheduledExecutorService executor, NotEnoughRunesPlugin plugin, NotEnoughRunesConfig config, Client client, ClientThread clientThread, ItemManager itemManager, NERData nerData)
 	{
 		super(false);
 		this.plugin = plugin;
 		this.config = config;
 		this.searchResultsPanel = new NERSearchResultsPanel(plugin, client, clientThread, itemManager, this);
+		this.clientThread = clientThread;
+		this.itemManager = itemManager;
+		this.nerData = nerData;
 
 		setLayout(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
@@ -63,7 +70,7 @@ public class NERPanel extends PluginPanel
 			log.info("previous item exists");
 			SwingUtilities.invokeLater(() ->
 			{
-				itemPanel = new NERItemPanel(prevItemPanel.item);
+				itemPanel = new NERItemPanel(prevItemPanel.item, itemManager, nerData, clientThread);
 				remove(searchResultsPanel);
 				add(itemPanel, BorderLayout.CENTER);
 				this.updateUI();
@@ -87,7 +94,7 @@ public class NERPanel extends PluginPanel
 			remove(itemPanel);
 			SwingUtilities.invokeLater(() ->
 			{
-				prevItemPanel = new NERItemPanel(itemPanel.item);
+				prevItemPanel = new NERItemPanel(itemPanel.item, itemManager, nerData, clientThread);
 				this.updateUI();
 				itemPanel = null;
 			});
@@ -99,7 +106,7 @@ public class NERPanel extends PluginPanel
 
 	void displayItem(NERItem item)
 	{
-		itemPanel = new NERItemPanel(item);
+		itemPanel = new NERItemPanel(item, itemManager, nerData, clientThread);
 		remove(searchResultsPanel);
 		add(itemPanel, BorderLayout.CENTER);
 		updateUI();

@@ -2,6 +2,7 @@ package com.notenoughrunes.types;
 
 import java.io.IOException;
 import java.util.Set;
+import javax.inject.Inject;
 import lombok.Data;
 import net.runelite.client.RuneLite;
 
@@ -22,6 +23,7 @@ public class NERData
 	private final Set<NERDropItem> itemDropData;
 
 
+	@Inject
 	public NERData(DataFetcher dataFetcher) throws IOException
 	{
 		this.itemInfoData = dataFetcher.getItemInfo();

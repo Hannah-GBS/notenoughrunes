@@ -1,5 +1,6 @@
 package com.notenoughrunes.ui;
 
+import com.notenoughrunes.types.NERData;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -15,6 +16,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import lombok.Getter;
+import net.runelite.client.callback.ClientThread;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.components.materialtabs.MaterialTab;
@@ -38,10 +41,10 @@ class NERItemPanel extends JPanel
 	public NERItem item;
 
 
-	NERItemPanel(NERItem item)
+	NERItemPanel(NERItem item, ItemManager itemManager, NERData nerData, ClientThread clientThread)
 	{
 		this.item = item;
-		this.sourcesPanel = new NERSourcesPanel();
+		this.sourcesPanel = new NERSourcesPanel(item, itemManager, nerData, clientThread);
 		this.usesPanel = new NERUsesPanel();
 
 		setLayout(new BorderLayout());
