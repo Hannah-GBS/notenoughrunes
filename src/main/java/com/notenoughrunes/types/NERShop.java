@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @Data
 @RequiredArgsConstructor
-class NERShop
+public class NERShop
 {
 	private final String name;
 	private final String sellMultiplier;

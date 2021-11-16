@@ -7,12 +7,14 @@ import com.notenoughrunes.types.NERProductionSkill;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.BOTH;
 import static java.awt.GridBagConstraints.CENTER;
 import static java.awt.GridBagConstraints.EAST;
 import static java.awt.GridBagConstraints.HORIZONTAL;
 import static java.awt.GridBagConstraints.LINE_END;
 import static java.awt.GridBagConstraints.LINE_START;
 import static java.awt.GridBagConstraints.NONE;
+import static java.awt.GridBagConstraints.NORTHWEST;
 import static java.awt.GridBagConstraints.WEST;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -25,6 +27,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
@@ -54,8 +57,31 @@ public class NERRecipePanel extends JPanel
 		setBorder(BorderFactory.createLineBorder(ColorScheme.LIGHT_GRAY_COLOR, 1));
 
 		int row = 0;
-		add(new JLabel(recipe.getFacilities()), new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
-		// todo images? i've left col0 unused all the way down
+
+		if (recipe.getFacilities() != null)
+		{
+			add(new JLabel("Facilities:"), new GridBagConstraints(0, row, 2, 1, 0.0, 0.0, LINE_START, NONE, new Insets(0, 6, 0, 0), 4, 4));
+			JLabel facilitiesLabel = new JLabel(recipe.getFacilities());
+			facilitiesLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+			facilitiesLabel.setMaximumSize(new Dimension(0, 20));
+			facilitiesLabel.setPreferredSize(new Dimension(0, 20));
+			add(facilitiesLabel, new GridBagConstraints(2, row++, 2, 1, 1.0, 0.0, LINE_END, BOTH, NO_INSETS, 4, 4));
+		}
+
+		if (recipe.getTools() != null)
+		{
+			add(new JLabel("Tools:"), new GridBagConstraints(0, row, 2, 1, 1.0, 0.0, NORTHWEST, NONE, new Insets(0, 6, 0, 0), 4, 4));
+			String[] toolsList = recipe.getTools().split(", ");
+			for (String tool : toolsList)
+			{
+				JLabel toolLabel = new JLabel(tool);
+				toolLabel.setMaximumSize(new Dimension(0, 20));
+				toolLabel.setPreferredSize(new Dimension(0, 20));
+				toolLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+				toolLabel.setToolTipText(tool);
+				add(toolLabel, new GridBagConstraints(2, row++, 2, 1, 1.0, 0.0, LINE_END, BOTH, NO_INSETS, 4, 4));
+			}
+		}
 
 		for (NERProductionSkill skill : recipe.getSkills())
 		{
@@ -63,7 +89,7 @@ public class NERRecipePanel extends JPanel
 
 			add(new JLabel(new ImageIcon(ImageUtil.loadImageResource(getClass(), iconPath))), new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
 			add(new JLabel(skill.getName()), new GridBagConstraints(1, row, 1, 1, 1.0, 0.0, LINE_START, NONE, NO_INSETS, 4, 4));
-			add(new JLabel("Lv" + skill.getLevel()), new GridBagConstraints(2, row, 1, 1, 0.2, 0.0, LINE_START, NONE, NO_INSETS, 4, 4));
+			add(new JLabel("<html><body style=\"text-align:right\">Lv" + skill.getLevel() + "</body></html>"), new GridBagConstraints(2, row, 1, 1, 0.2, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
 			add(new JLabel(skill.getExperience() + "xp"), new GridBagConstraints(3, row++, 1, 1, 0.0, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
 		}
 
@@ -79,7 +105,10 @@ public class NERRecipePanel extends JPanel
 			JLabel iconLabel = new JLabel();
 			setItemImage(iconLabel, material.getName());
 			add(iconLabel, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, CENTER, NONE, new Insets(0, 8, 0, 0), 4, 4));
-			add(new JLabel(material.getName()), new GridBagConstraints(1, row, 2, 1, 1.0, 0.0, WEST, NONE, NO_INSETS, 4, 4));
+			JLabel materialLabel = new JLabel(material.getName());
+			materialLabel.setMaximumSize(new Dimension(0, 0));
+			materialLabel.setPreferredSize(new Dimension(0, 0));
+			add(materialLabel, new GridBagConstraints(1, row, 2, 1, 1.0, 0.0, WEST, BOTH, NO_INSETS, 4, 4));
 			add(new JLabel("x" + material.getQuantity()), new GridBagConstraints(3, row++, 1, 1, 0.0, 0.0, EAST, NONE, NO_INSETS, 4, 4));
 		}
 
@@ -92,15 +121,19 @@ public class NERRecipePanel extends JPanel
 		JLabel outputIcon = new JLabel();
 		setItemImage(outputIcon, recipe.getOutput().getName());
 		add(outputIcon, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, CENTER, NONE, new Insets(0, 8, 0, 0), 4, 4));
-		add(new JLabel(recipe.getOutput().getName()), new GridBagConstraints(1, row, 2, 1, 1.0, 0.0, WEST, NONE, NO_INSETS, 4, 4));
+		JLabel outputLabel = new JLabel(recipe.getOutput().getName());
+		outputLabel.setMaximumSize(new Dimension(0, 0));
+		outputLabel.setPreferredSize(new Dimension(0, 0));
+		add(outputLabel, new GridBagConstraints(1, row, 2, 1, 1.0, 0.0, WEST, BOTH, NO_INSETS, 4, 4));
 
 		JLabel quantityLabel = new JLabel("x" + recipe.getOutput().getQuantity());
 		add(quantityLabel, new GridBagConstraints(3, row++, 1, 1, 0.0, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
 		if (recipe.getOutput().getQuantityNote() != null)
 		{
-			quantityLabel.setText(quantityLabel.getText() + "\uD83D\uDEC8");
+//			quantityLabel.setText("<html><body style=\"border-bottom: 1px dotted #ffffff\">" + quantityLabel.getText() + "<span style=\"font-size:21;color:orange\">\uD83D\uDEC8</span></body></html>");
+			quantityLabel.setText("<html><body style=\"border-bottom: 1px dotted #ffffff\">" + quantityLabel.getText() + "*");
 			String tooltipText = recipe.getOutput().getQuantityNote().replaceAll("[\\[\\]]|<[^>]*>", "");
-			addTooltip(quantityLabel, String.format("<html><p width=\"%d\">%s</p></html>", 200, tooltipText));
+			quantityLabel.setToolTipText(String.format("<html><p width=\"%d\">%s</p></html>", 200, tooltipText));
 		}
 	}
 

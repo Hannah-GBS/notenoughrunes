@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.font.TextAttribute;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,8 +46,12 @@ class NERItemPanel extends JPanel
 		this.sourcesPanel = new NERSourcesPanel(item, itemManager, nerData, clientThread);
 		this.usesPanel = new NERUsesPanel();
 
+		String useName = item.getInfoItem().getName().length() > item.getInfoItem().getGroup().length()
+			? item.getInfoItem().getName()
+			: item.getInfoItem().getGroup();
+
 		setLayout(new BorderLayout());
-		setBorder(new EmptyBorder(0, 10, 10, 10));
+		setBorder(new EmptyBorder(0, 0, 10, 0));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
 		JLabel itemIcon = new JLabel();
@@ -68,9 +71,7 @@ class NERItemPanel extends JPanel
 		Map<TextAttribute, Object> attributes = new HashMap<>(nameFont.getAttributes());
 		attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 		itemNameLabel.setFont(FontManager.getRunescapeBoldFont().deriveFont(attributes).deriveFont(20f));
-//		itemNameLabel.setMaximumSize(new Dimension(0, 0));
-//		itemNameLabel.setPreferredSize(new Dimension(0, 22));
-		itemNameLabel.setText(item.getInfoItem().getName());
+		itemNameLabel.setText(useName);
 		itemInfoRight.add(itemNameLabel, gbc);
 		gbc.gridy++;
 
@@ -78,8 +79,6 @@ class NERItemPanel extends JPanel
 		itemDesc.setForeground(Color.WHITE);
 		itemDesc.setFont(FontManager.getRunescapeSmallFont());
 		itemDesc.setHorizontalAlignment(JLabel.CENTER);
-//		itemDesc.setMaximumSize(new Dimension(0, 0));
-//		itemDesc.setPreferredSize(new Dimension(170, 0));
 		itemDesc.setVerticalAlignment(JLabel.NORTH);
 		itemDesc.setText(String.format("<html><body style=\"text-justify: none; text-align: center; overflow: clip;\">%s</body></html>", item.getInfoItem().getExamineText()));
 		itemInfoRight.add(itemDesc, gbc);
