@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NERDropSource
 {
-	public final String source;
-	public final int quantityLow;
-	public final int quantityHigh;
-	public final String rarity;
-	public final String dropLevel;
-	public final String dropType;
+	private final String source;
+	private final int quantityLow;
+	private final int quantityHigh;
+	private final String rarity;
+	private final String dropLevel;
+	private final String dropType;
 }

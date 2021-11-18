@@ -1,9 +1,11 @@
 package com.notenoughrunes.ui;
 
 import com.notenoughrunes.NotEnoughRunesPlugin;
+import com.notenoughrunes.RarityParser;
 import com.notenoughrunes.types.NERData;
 import com.notenoughrunes.types.NERProductionRecipe;
 import com.notenoughrunes.types.NERShop;
+import com.notenoughrunes.types.NERSpawnItem;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -13,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
@@ -35,9 +38,6 @@ import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.SwingUtil;
-import net.runelite.http.api.RuneLiteAPI;
-
-
 
 
 class NERSourcesPanel extends JPanel
@@ -144,15 +144,11 @@ class NERSourcesPanel extends JPanel
 				break;
 
 			case DROPS:
-				// todo make this panel lol
-//				Set<NERDropSource> dropSources = nerData.getItemDropData().stream()
-//					.filter(item -> item.getName().equals(useName))
-//					.findFirst().get().getDropSources();
-//
-//				dropSources.forEach(dropSource -> {
-//					NERDropPanel panel = new NERDropPanel(dropSource);
-//					sectionItems.add(panel);
-//				});
+				nerData.getItemDropData().stream()
+					.filter(dropItem -> dropItem.getName().equals(useName))
+					.findFirst()
+					.map(NERDropsPanel::new)
+					.ifPresent(sectionItems::add);
 				break;
 
 			case SHOPS:
@@ -172,16 +168,13 @@ class NERSourcesPanel extends JPanel
 				break;
 
 			case SPAWNS:
-				// todo make this panel lol
-//				Set<NERSpawnItem> spawnItems = new HashSet<>();
-//				nerData.getItemSpawnData().forEach(group -> spawnItems.addAll(group.getSpawns().stream()
-//					.filter(spawnItem -> spawnItem.getName().equals(useName))
-//					.collect(Collectors.toSet())));
-//
-//				spawnItems.forEach(spawnItem -> {
-//					NERSpawnPanel panel = new NERSpawnPanel(spawnItem);
-//					sectionItems.add(panel);
-//				});
+				nerData.getItemSpawnData().stream()
+					.flatMap(spawnGroup -> spawnGroup.getSpawns().stream()
+						.filter(spawnItem -> spawnItem.getName().equals(useName)))
+					.distinct()
+					.sorted(Comparator.comparing(NERSpawnItem::getLocation))
+					.map(NERSpawnPanel::new)
+					.forEachOrdered(sectionItems::add);
 				break;
 		}
 
