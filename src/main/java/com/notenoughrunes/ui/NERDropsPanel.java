@@ -3,13 +3,10 @@ package com.notenoughrunes.ui;
 import com.notenoughrunes.RarityParser;
 import com.notenoughrunes.types.NERDropItem;
 import com.notenoughrunes.types.NERDropSource;
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
@@ -22,17 +19,17 @@ import java.util.stream.Stream;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import net.runelite.client.ui.ColorScheme;
-import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.util.ImageUtil;
 
 public class NERDropsPanel extends JPanel
 {
 	
-	private static DecimalFormat PERCENT_FORMAT = new DecimalFormat("#.##%");
+	private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("#.##%");
 
-	private static Map<String, BufferedImage> dropTypeImages = Stream.of(
+	private static final Map<String, BufferedImage> dropTypeImages = Stream.of(
 		"combat",
 		"reward",
 		"hunter",
@@ -70,19 +67,28 @@ public class NERDropsPanel extends JPanel
 				gbc.gridx = 0;
 				gbc.anchor = GridBagConstraints.LINE_START;
 				gbc.gridwidth = 3;
-				add(new JLabel(dropSource.getSource()), gbc);
+				gbc.fill = GridBagConstraints.BOTH;
+				gbc.weightx = 1.0;
+				JLabel dropName = new JLabel(dropSource.getSource());
+				dropName.setPreferredSize(new Dimension(0, 20));
+				add(dropName, gbc);
 
 				gbc.gridx = 0;
 				gbc.gridy++;
 				gbc.gridwidth = 1;
+				gbc.weightx = 0.1;
+				gbc.fill = GridBagConstraints.NONE;
 				add(new JLabel(buildQuantityString(dropSource)), gbc);
 
 				JLabel dropType = new JLabel(dropSource.getDropLevel(), new ImageIcon(dropTypeImages.get(dropSource.getDropType())), SwingConstants.CENTER);
 				dropType.setText(dropSource.getDropLevel());
 				dropType.setIcon(new ImageIcon(dropTypeImages.get(dropSource.getDropType())));
+				dropType.setToolTipText(dropSource.getDropLevel());
+				dropType.setPreferredSize(new Dimension(20, 20));
 				gbc.gridx = 1;
-				gbc.weightx = 1;
+				gbc.weightx = 1.0;
 				gbc.anchor = GridBagConstraints.CENTER;
+				gbc.fill = GridBagConstraints.BOTH;
 				add(dropType, gbc);
 				
 				JLabel rarityLabel = new JLabel(dropSource.getRarity());
@@ -90,8 +96,22 @@ public class NERDropsPanel extends JPanel
 					addTooltip(rarityLabel, PERCENT_FORMAT.format(RarityParser.calculateRarity(dropSource)));
 				gbc.gridx = 2;
 				gbc.anchor = GridBagConstraints.LINE_END;
+				gbc.fill = GridBagConstraints.NONE;
+				gbc.weightx = 0.1;
 				add(rarityLabel, gbc);
-				
+
+				gbc.gridx = 0;
+				gbc.gridy++;
+				gbc.gridwidth = 3;
+				gbc.anchor = GridBagConstraints.CENTER;
+				gbc.fill = GridBagConstraints.BOTH;
+
+				JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
+				separator.setBackground(ColorScheme.LIGHT_GRAY_COLOR);
+				separator.setPreferredSize(new Dimension(1, 2));
+
+				add(separator, gbc);
+
 				gbc.gridy++;
 			});
 		

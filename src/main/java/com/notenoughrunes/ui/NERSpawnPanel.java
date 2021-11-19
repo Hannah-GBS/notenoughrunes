@@ -27,7 +27,9 @@ public class NERSpawnPanel extends JPanel
 		JLabel membersLabel = new JLabel(new ImageIcon(spawn.isMembers() ? MEMBERS_ICON : F2P_ICON));
 		membersLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
 		add(membersLabel, BorderLayout.WEST);
-		add(new JLabel(spawn.getLocation()), BorderLayout.CENTER);
+		JLabel location = new JLabel(spawn.getLocation());
+		location.setPreferredSize(new Dimension(0, 20));
+		add(location, BorderLayout.CENTER);
 		// maybe this panel could have a link to show on the world map?
 	}
 	
