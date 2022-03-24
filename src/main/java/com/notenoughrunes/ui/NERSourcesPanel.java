@@ -1,11 +1,11 @@
 package com.notenoughrunes.ui;
 
 import com.notenoughrunes.NotEnoughRunesPlugin;
-import com.notenoughrunes.RarityParser;
 import com.notenoughrunes.types.NERData;
 import com.notenoughrunes.types.NERProductionRecipe;
 import com.notenoughrunes.types.NERShop;
 import com.notenoughrunes.types.NERSpawnItem;
+import static com.notenoughrunes.ui.NERPanel.MAX_ENTRIES;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -50,12 +50,12 @@ class NERSourcesPanel extends JPanel
 	static final ImageIcon BACK_ICON;
 	static final ImageIcon BACK_ICON_HOVER;
 
-	private final JPanel container = new JPanel(new GridBagLayout());
 	private final NERItem nerItem;
 	private final NERData nerData;
 	private final ItemManager itemManager;
 	private final ClientThread clientThread;
 	private final String useName;
+	private final NERPanel mainPanel;
 
 
 	@AllArgsConstructor
@@ -85,12 +85,13 @@ class NERSourcesPanel extends JPanel
 		SECTION_RETRACT_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(sectionExpandIcon, -100));
 	}
 
-	NERSourcesPanel(NERItem nerItem, ItemManager itemManager, NERData nerData, ClientThread clientThread)
+	NERSourcesPanel(NERItem nerItem, ItemManager itemManager, NERData nerData, ClientThread clientThread, NERPanel mainPanel)
 	{
 		this.nerItem = nerItem;
 		this.nerData = nerData;
 		this.itemManager = itemManager;
 		this.clientThread = clientThread;
+		this.mainPanel = mainPanel;
 
 		this.useName = nerItem.getInfoItem().getName().length() > nerItem.getInfoItem().getGroup().length()
 			? nerItem.getInfoItem().getName()
@@ -100,6 +101,7 @@ class NERSourcesPanel extends JPanel
 
 		GridBagConstraints containerGbc = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
 		JPanel recipeSection = createSection(SectionType.RECIPES);
+		JPanel container = new JPanel(new GridBagLayout());
 		container.add(recipeSection,containerGbc);
 		containerGbc.gridy++;
 		JPanel dropsSection = createSection(SectionType.DROPS);
@@ -135,10 +137,11 @@ class NERSourcesPanel extends JPanel
 			case RECIPES:
 				Set<NERProductionRecipe> recipes = nerData.getItemProductionData().stream()
 					.filter(itemRecipe -> itemRecipe.getOutput().getName().equals(useName))
+					.limit(MAX_ENTRIES)
 					.collect(Collectors.toSet());
 
 				recipes.forEach((recipe) -> {
-					NERRecipePanel panel = new NERRecipePanel(recipe, itemManager, nerData, clientThread);
+					NERRecipePanel panel = new NERRecipePanel(recipe, itemManager, nerData, clientThread, mainPanel, useName);
 					sectionItems.add(panel);
 				});
 				break;
@@ -162,7 +165,7 @@ class NERSourcesPanel extends JPanel
 					break;
 				}
 
-				NERShopsPanel panel = new NERShopsPanel(shops, nerItem, itemManager, clientThread);
+				NERShopsPanel panel = new NERShopsPanel(shops, nerItem, itemManager, clientThread, false);
 				sectionItems.add(panel);
 
 				break;
@@ -173,6 +176,7 @@ class NERSourcesPanel extends JPanel
 						.filter(spawnItem -> spawnItem.getName().equals(useName)))
 					.distinct()
 					.sorted(Comparator.comparing(NERSpawnItem::getLocation))
+					.limit(MAX_ENTRIES)
 					.map(NERSpawnPanel::new)
 					.forEachOrdered(sectionItems::add);
 				break;
@@ -180,7 +184,11 @@ class NERSourcesPanel extends JPanel
 
 		if (sectionItems.size() < 1)
 		{
-			return new JPanel();
+			JPanel emptyPanel = new JPanel();
+			emptyPanel.setMinimumSize(new Dimension(0, 0));
+			emptyPanel.setMaximumSize(new Dimension(0, 0));
+			emptyPanel.setPreferredSize(new Dimension(0, 0));
+			return emptyPanel;
 		}
 
 		final JPanel section = new JPanel();

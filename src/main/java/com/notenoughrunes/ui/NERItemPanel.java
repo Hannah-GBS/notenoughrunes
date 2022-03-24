@@ -15,6 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
@@ -22,7 +23,7 @@ import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.components.materialtabs.MaterialTab;
 import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 
-
+@Slf4j
 class NERItemPanel extends JPanel
 {
 	private static final Dimension ICON_SIZE = new Dimension(32, 32);
@@ -40,11 +41,13 @@ class NERItemPanel extends JPanel
 	public NERItem item;
 
 
-	NERItemPanel(NERItem item, ItemManager itemManager, NERData nerData, ClientThread clientThread)
+	NERItemPanel(NERItem item, ItemManager itemManager, NERData nerData, ClientThread clientThread, NERPanel mainPanel)
 	{
 		this.item = item;
-		this.sourcesPanel = new NERSourcesPanel(item, itemManager, nerData, clientThread);
-		this.usesPanel = new NERUsesPanel();
+		this.sourcesPanel = new NERSourcesPanel(item, itemManager, nerData, clientThread, mainPanel);
+		this.usesPanel = new NERUsesPanel(item, itemManager, nerData, clientThread, mainPanel);
+
+		log.debug("Creating item panel: " + item.getInfoItem().getName());
 
 		String useName = item.getInfoItem().getName().length() > item.getInfoItem().getGroup().length()
 			? item.getInfoItem().getName()

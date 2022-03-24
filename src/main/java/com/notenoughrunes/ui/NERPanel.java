@@ -8,6 +8,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.inject.Inject;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import lombok.Getter;
@@ -29,8 +30,12 @@ public class NERPanel extends PluginPanel
 	private final ItemManager itemManager;
 	private final NERData nerData;
 
+	public final static int MAX_ENTRIES = 100;
+
 	private NERItemPanel itemPanel;
-	private NERItemPanel prevItemPanel;
+//	private NERItemPanel prevItemPanel;
+
+	private JPanel currentPanel;
 
 	@Getter
 	private final NERSearchResultsPanel searchResultsPanel;
@@ -65,19 +70,19 @@ public class NERPanel extends PluginPanel
 	{
 		searchResultsPanel.updateSearch(searchBar);
 
-		if (prevItemPanel != null)
-		{
-			log.info("previous item exists");
-			SwingUtilities.invokeLater(() ->
-			{
-				itemPanel = new NERItemPanel(prevItemPanel.item, itemManager, nerData, clientThread);
-				remove(searchResultsPanel);
-				add(itemPanel, BorderLayout.CENTER);
-				this.updateUI();
-				prevItemPanel = null;
-			});
-
-		}
+//		if (prevItemPanel != null)
+//		{
+//			log.info("previous item exists");
+//			SwingUtilities.invokeLater(() ->
+//			{
+//				itemPanel = new NERItemPanel(prevItemPanel.item, itemManager, nerData, clientThread, this);
+//				remove(searchResultsPanel);
+//				add(itemPanel, BorderLayout.CENTER);
+//				this.updateUI();
+//				prevItemPanel = null;
+//			});
+//
+//		}
 	}
 
 	private void itemSearch()
@@ -90,15 +95,15 @@ public class NERPanel extends PluginPanel
 
 		if (itemPanel != null)
 		{
-			log.info("setting previous item");
 			remove(itemPanel);
 			SwingUtilities.invokeLater(() ->
 			{
-				prevItemPanel = new NERItemPanel(itemPanel.item, itemManager, nerData, clientThread);
+//				prevItemPanel = new NERItemPanel(itemPanel.item, itemManager, nerData, clientThread, this);
 				this.updateUI();
 				itemPanel = null;
 			});
 		}
+		currentPanel = searchResultsPanel;
 		add(searchResultsPanel);
 		searchResultsPanel.itemSearch(searchBar);
 		searchBar.setEditable(true);
@@ -106,8 +111,9 @@ public class NERPanel extends PluginPanel
 
 	void displayItem(NERItem item)
 	{
-		itemPanel = new NERItemPanel(item, itemManager, nerData, clientThread);
-		remove(searchResultsPanel);
+		itemPanel = new NERItemPanel(item, itemManager, nerData, clientThread, this);
+		remove(currentPanel);
+		currentPanel = itemPanel;
 		add(itemPanel, BorderLayout.CENTER);
 		updateUI();
 	}

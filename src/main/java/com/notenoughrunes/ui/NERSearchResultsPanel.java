@@ -8,7 +8,9 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -22,11 +24,12 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.components.IconTextField;
 import net.runelite.client.ui.components.PluginErrorPanel;
 import net.runelite.client.util.AsyncBufferedImage;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 
 @Slf4j
 class NERSearchResultsPanel extends JPanel
 {
-	private static final int MAX_RESULTS = 100;
+	private static final int MAX_RESULTS = 200;
 	private static final String ERROR_PANEL = "ERROR_PANEL";
 	private static final String RESULTS_PANEL = "RESULTS_PANEL";
 
@@ -37,7 +40,7 @@ class NERSearchResultsPanel extends JPanel
 	private final JPanel centerPanel = new JPanel(cardLayout);
 	private final PluginErrorPanel errorPanel = new PluginErrorPanel();
 
-	private final List<NERItem> results = new ArrayList<>();
+	private List<NERItem> results = new ArrayList<>();
 	private final NotEnoughRunesPlugin plugin;
 	private final Client client;
 	private final ClientThread clientThread;
@@ -157,6 +160,10 @@ class NERSearchResultsPanel extends JPanel
 				return;
 			}
 
+			results = results.stream()
+				.sorted(Comparator.comparing(result -> new LevenshteinDistance().apply(result.getInfoItem().getName(), search)))
+				.collect(Collectors.toList());
+
 			SwingUtilities.invokeLater(this::processResult);
 			searchBar.setIcon(IconTextField.Icon.SEARCH);
 		});
@@ -164,11 +171,12 @@ class NERSearchResultsPanel extends JPanel
 
 	void processResult()
 	{
+
 		cardLayout.show(centerPanel, RESULTS_PANEL);
 		int index = 0;
 		if (results.size() == 0)
 		{
-			log.info("No results found");
+//			log.info("No results found");
 			return;
 		}
 		for (NERItem nerItem : results)

@@ -56,9 +56,9 @@ class NERSearchItemPanel extends JPanel
 			}
 
 			@Override
-			public void mouseReleased(MouseEvent e)
+			public void mouseClicked(MouseEvent e)
 			{
-				log.info("Clicked " + item.getInfoItem().getName());
+//				log.info("Clicked " + item.getInfoItem().getName());
 				mainPanel.displayItem(item);
 			}
 

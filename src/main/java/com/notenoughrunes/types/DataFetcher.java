@@ -111,13 +111,13 @@ public class DataFetcher
 		String data;
 		if (matches)
 		{
-			log.info("Checksum match for " + path);
+			log.debug("Checksum match for " + path);
 			data = getLocalJson(path);
 		}
 		else
 		{
 			data = getRemoteJson(path, true);
-			log.info("Checksum mismatch for " + path);
+			log.debug("Checksum mismatch for " + path);
 		}
 
 		return data;

@@ -1,9 +1,11 @@
 package com.notenoughrunes.ui;
 
 import com.notenoughrunes.types.NERData;
+import com.notenoughrunes.types.NERInfoItem;
 import com.notenoughrunes.types.NERProductionMaterial;
 import com.notenoughrunes.types.NERProductionRecipe;
 import com.notenoughrunes.types.NERProductionSkill;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -14,14 +16,23 @@ import static java.awt.GridBagConstraints.HORIZONTAL;
 import static java.awt.GridBagConstraints.LINE_END;
 import static java.awt.GridBagConstraints.LINE_START;
 import static java.awt.GridBagConstraints.NONE;
-import static java.awt.GridBagConstraints.NORTHWEST;
 import static java.awt.GridBagConstraints.WEST;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -29,6 +40,8 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
@@ -36,119 +49,209 @@ import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.util.AsyncBufferedImage;
 import net.runelite.client.util.ImageUtil;
 
+@Slf4j
 public class NERRecipePanel extends JPanel
 {
+
+	private static final Map<String, BufferedImage> facilityImages = Stream.of(
+		"Anvil",
+		"Apothecary",
+		"Banner easel",
+		"Barbarian anvil",
+		"Big compost bin",
+		"Blast furnace",
+		"Brewery",
+		"Clay oven",
+		"Compost bin",
+		"Cooking range",
+		"Cooking range (2018 Easter event)",
+		"Crafting table 1",
+		"Crafting table 2",
+		"Crafting table 3",
+		"Crafting table 4",
+		"Dairy churn",
+		"Dairy cow",
+		"Demon lectern",
+		"Eagle lectern",
+		"Eodan",
+		"Fancy Clothes Store",
+		"Farming patch",
+		"Furnace",
+		"Loom",
+		"Mahogany demon lectern",
+		"Mahogany eagle lectern",
+		"Metal press",
+		"Oak lectern",
+		"Pluming stand",
+		"Pottery wheel",
+		"Sandpit",
+		"Sawmill",
+		"Sbott",
+		"Shield easel",
+		"Singing bowl",
+		"Spinning wheel",
+		"Tannery",
+		"Taxidermist",
+		"Teak demon lectern",
+		"Teak eagle lectern",
+		"Thakkrad Sigmundson",
+		"Water",
+		"Whetstone",
+		"Windmill",
+		"Woodcutting stump",
+		"Workbench"
+	).collect(Collectors.toMap(
+		Function.identity(),
+		name ->
+		{
+			try
+			{
+				return ImageUtil.loadImageResource(NERRecipePanel.class, "recipe_facility_icons/" + name + ".png");
+			} catch (Exception e)
+			{
+				return new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
+			}
+		}
+	));
 
 	private static final Insets NO_INSETS = new Insets(0, 0, 0, 0);
 	private final ItemManager itemManager;
 	private final NERData nerData;
 	private final ClientThread clientThread;
+	private final NERPanel mainPanel;
 
-	public NERRecipePanel(NERProductionRecipe recipe, ItemManager itemManager, NERData nerData, ClientThread clientThread)
+	public NERRecipePanel(NERProductionRecipe recipe, ItemManager itemManager, NERData nerData, ClientThread clientThread, NERPanel mainPanel, String useName)
 	{
 		this.itemManager = itemManager;
 		this.nerData = nerData;
 		this.clientThread = clientThread;
+		this.mainPanel = mainPanel;
 		// client would be used for images
 
 		setMaximumSize(new Dimension(PluginPanel.PANEL_WIDTH, 800));
-		setBackground(ColorScheme.DARK_GRAY_COLOR);
+		setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		setLayout(new GridBagLayout());
-		setBorder(BorderFactory.createLineBorder(ColorScheme.LIGHT_GRAY_COLOR, 1));
-
+		setBorder(new EmptyBorder(7, 7, 6, 7));
 		int row = 0;
 
 		if (recipe.getFacilities() != null)
 		{
-			add(new JLabel("Facilities:"), new GridBagConstraints(0, row, 2, 1, 0.0, 0.0, LINE_START, NONE, new Insets(0, 6, 0, 0), 4, 4));
-			JLabel facilitiesLabel = new JLabel(recipe.getFacilities());
-			facilitiesLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-			facilitiesLabel.setMaximumSize(new Dimension(0, 20));
-			facilitiesLabel.setPreferredSize(new Dimension(0, 20));
-			add(facilitiesLabel, new GridBagConstraints(2, row++, 2, 1, 1.0, 0.0, LINE_END, BOTH, NO_INSETS, 4, 4));
+			JLabel facilityLabel = new JLabel(recipe.getFacilities());
+			facilityLabel.setMaximumSize(new Dimension(0, 20));
+			facilityLabel.setPreferredSize(new Dimension(0, 20));
+			facilityLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+			if (facilityImages.containsKey(recipe.getFacilities()))
+			{
+				facilityLabel.setIcon(new ImageIcon(facilityImages.get(recipe.getFacilities())));
+			}
+
+			add(facilityLabel, new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, BOTH, NO_INSETS, 4, 4));
 		}
 
-		if (recipe.getTools() != null)
-		{
-			add(new JLabel("Tools:"), new GridBagConstraints(0, row, 2, 1, 1.0, 0.0, NORTHWEST, NONE, new Insets(0, 6, 0, 0), 4, 4));
-			String[] toolsList = recipe.getTools().split(", ");
-			for (String tool : toolsList)
-			{
-				JLabel toolLabel = new JLabel(tool);
-				toolLabel.setMaximumSize(new Dimension(0, 20));
-				toolLabel.setPreferredSize(new Dimension(0, 20));
-				toolLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-				toolLabel.setToolTipText(tool);
-				add(toolLabel, new GridBagConstraints(2, row++, 2, 1, 1.0, 0.0, LINE_END, BOTH, NO_INSETS, 4, 4));
-			}
-		}
+		JPanel skillsPanel = new JPanel(new GridBagLayout());
+		skillsPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		int skillsRow = 0;
 
 		for (NERProductionSkill skill : recipe.getSkills())
 		{
 			String iconPath = "/skill_icons/" + skill.getName().toLowerCase() + ".png";
 
-			add(new JLabel(new ImageIcon(ImageUtil.loadImageResource(getClass(), iconPath))), new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
-			add(new JLabel(skill.getName()), new GridBagConstraints(1, row, 1, 1, 1.0, 0.0, LINE_START, NONE, NO_INSETS, 4, 4));
-			add(new JLabel("<html><body style=\"text-align:right\">Lv" + skill.getLevel() + "</body></html>"), new GridBagConstraints(2, row, 1, 1, 0.2, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
-			add(new JLabel(skill.getExperience() + "xp"), new GridBagConstraints(3, row++, 1, 1, 0.0, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
+			skillsPanel.add(new JLabel(new ImageIcon(ImageUtil.loadImageResource(getClass(), iconPath))), new GridBagConstraints(0, skillsRow, 1, 1, 0.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
+			skillsPanel.add(new JLabel(skill.getName()), new GridBagConstraints(1, skillsRow, 1, 1, 1.0, 0.0, LINE_START, NONE, NO_INSETS, 4, 4));
+			skillsPanel.add(new JLabel("<html><body style=\"text-align:right\">Lv" + skill.getLevel() + "</body></html>"), new GridBagConstraints(2, skillsRow, 1, 1, 0.2, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
+			skillsPanel.add(new JLabel(skill.getExperience() + "xp"), new GridBagConstraints(3, skillsRow++, 1, 1, 0.0, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
 		}
 
-		JSeparator actionSeparator = new JSeparator(JSeparator.HORIZONTAL);
-		actionSeparator.setBackground(ColorScheme.LIGHT_GRAY_COLOR);
-		actionSeparator.setPreferredSize(new Dimension(1, 6));
-		add(actionSeparator, new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, HORIZONTAL, NO_INSETS, 0, 0));
-		add(new JLabel("Materials"), new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
+		add(skillsPanel, new GridBagConstraints(0, row++, 4, 1, 0.0, 0.0, LINE_START, BOTH, NO_INSETS, 4, 4));
 
+//		JSeparator actionSeparator = new JSeparator(JSeparator.HORIZONTAL);
+//		actionSeparator.setBackground(ColorScheme.LIGHT_GRAY_COLOR);
+//		actionSeparator.setPreferredSize(new Dimension(1, 6));
+//		add(actionSeparator, new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, HORIZONTAL, NO_INSETS, 0, 0));
+		JLabel materialHeader = new JLabel("Materials");
+		add(materialHeader, new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
+
+		if (recipe.getTools() != null)
+		{
+			addTooltip(materialHeader, "Tools: " + recipe.getTools());
+		}
 
 		for (NERProductionMaterial material : recipe.getMaterials())
 		{
-			JLabel iconLabel = new JLabel();
-			setItemImage(iconLabel, material.getName());
-			add(iconLabel, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, CENTER, NONE, new Insets(0, 8, 0, 0), 4, 4));
-			JLabel materialLabel = new JLabel(material.getName());
-			materialLabel.setMaximumSize(new Dimension(0, 0));
-			materialLabel.setPreferredSize(new Dimension(0, 0));
-			add(materialLabel, new GridBagConstraints(1, row, 2, 1, 1.0, 0.0, WEST, BOTH, NO_INSETS, 4, 4));
-			add(new JLabel("x" + material.getQuantity()), new GridBagConstraints(3, row++, 1, 1, 0.0, 0.0, EAST, NONE, NO_INSETS, 4, 4));
+			JPanel materialRow = new JPanel(new GridBagLayout());
+			materialRow.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			JLabel materialLabel = new JLabel();
+			setItemImage(materialLabel, material.getName());
+			materialLabel.setText(material.getName());
+			materialLabel.setMaximumSize(new Dimension(0, 30));
+			materialLabel.setPreferredSize(new Dimension(0, 30));
+			materialRow.add(materialLabel, new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, LINE_START, BOTH, new Insets(0, 8, 0, 0), 4, 4));
+
+			materialRow.add(new JLabel("x" + material.getQuantity()), new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, EAST, NONE, NO_INSETS, 4, 4));
+
+			addMouseAdapter(materialLabel, material.getName(), useName);
+
+			add(materialRow, new GridBagConstraints(0, row++, 4, 1, 0.0, 0.0, CENTER, BOTH, NO_INSETS, 4, 4));
 		}
 
-		JSeparator resultSeparator = new JSeparator(JSeparator.HORIZONTAL);
-		resultSeparator.setBackground(ColorScheme.LIGHT_GRAY_COLOR);
-		resultSeparator.setPreferredSize(new Dimension(1, 2));
-		add(resultSeparator, new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, HORIZONTAL, NO_INSETS, 0, 0));
+
 
 		add(new JLabel("Output"), new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
-		JLabel outputIcon = new JLabel();
-		setItemImage(outputIcon, recipe.getOutput().getName());
-		add(outputIcon, new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, CENTER, NONE, new Insets(0, 8, 0, 0), 4, 4));
-		JLabel outputLabel = new JLabel(recipe.getOutput().getName());
-		outputLabel.setMaximumSize(new Dimension(0, 0));
-		outputLabel.setPreferredSize(new Dimension(0, 0));
-		add(outputLabel, new GridBagConstraints(1, row, 2, 1, 1.0, 0.0, WEST, BOTH, NO_INSETS, 4, 4));
+		JLabel outputLabel = new JLabel();
+		setItemImage(outputLabel, recipe.getOutput().getName());
+		outputLabel.setText(recipe.getOutput().getName());
+		outputLabel.setMaximumSize(new Dimension(0, 20));
+		outputLabel.setPreferredSize(new Dimension(0, 20));
+
+		add(outputLabel, new GridBagConstraints(0, row, 3, 1, 1.0, 0.0, LINE_START, BOTH, new Insets(0, 8, 0, 0), 4, 4));
+
+		addMouseAdapter(outputLabel, recipe.getOutput().getName(), useName);
 
 		JLabel quantityLabel = new JLabel("x" + recipe.getOutput().getQuantity());
 		add(quantityLabel, new GridBagConstraints(3, row++, 1, 1, 0.0, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
 		if (recipe.getOutput().getQuantityNote() != null)
 		{
-//			quantityLabel.setText("<html><body style=\"border-bottom: 1px dotted #ffffff\">" + quantityLabel.getText() + "<span style=\"font-size:21;color:orange\">\uD83D\uDEC8</span></body></html>");
 			quantityLabel.setText("<html><body style=\"border-bottom: 1px dotted #ffffff\">" + quantityLabel.getText() + "*");
 			String tooltipText = recipe.getOutput().getQuantityNote().replaceAll("[\\[\\]]|<[^>]*>", "");
 			quantityLabel.setToolTipText(String.format("<html><p width=\"%d\">%s</p></html>", 200, tooltipText));
 		}
+
+//		JSeparator resultSeparator = new JSeparator(JSeparator.HORIZONTAL);
+//		resultSeparator.setBackground(ColorScheme.LIGHT_GRAY_COLOR);
+//		resultSeparator.setPreferredSize(new Dimension(1, 2));
+//		add(resultSeparator, new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, HORIZONTAL, NO_INSETS, 0, 0));
 	}
 
 	private void setItemImage(JLabel label, String itemName)
 	{
-		int itemId = Objects.requireNonNull(nerData.getItemInfoData().stream()
+		int itemId = nerData.getItemInfoData().stream()
 			.filter(item -> item.getName().equals(itemName))
 			.findFirst()
-			.orElse(null))
+			.orElse(new NERInfoItem("null item", "", "", 0, false, false))
 			.getItemID();
 
 		clientThread.invokeLater(() -> {
 			AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemId));
 			SwingUtilities.invokeLater(() -> label.setIcon(new ImageIcon(itemImage)));
 		});
+	}
+
+	private NERItem getNERItem(String itemName)
+	{
+		NERInfoItem itemInfo = Objects.requireNonNull(nerData.getItemInfoData().stream()
+			.filter(item -> item.getName().equals(itemName))
+			.findFirst()
+			.orElse(nerData.getItemInfoData().stream()
+			.filter(item -> item.getGroup().equals(itemName))
+			.findFirst()
+			.orElse(null)));
+
+		NERItem nerItem = new NERItem(new AsyncBufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB), itemInfo);
+
+		clientThread.invokeLater(() -> nerItem.setIcon(this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()))));
+
+		return nerItem;
 	}
 
 	private void addTooltip(JLabel toUnderline, String tooltip)
@@ -164,4 +267,34 @@ public class NERRecipePanel extends JPanel
 		toUnderline.setToolTipText(tooltip);
 	}
 
+	private void addMouseAdapter(JLabel materialLabel, String materialName, String useName)
+	{
+		if (materialName.equals(useName))
+		{
+			return;
+		}
+
+		NERItem materialNERItem = getNERItem(materialName);
+
+		materialLabel.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				mainPanel.displayItem(materialNERItem);
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				setCursor(new Cursor(Cursor.HAND_CURSOR));
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+			}
+		});
+	}
 }
