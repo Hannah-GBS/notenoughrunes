@@ -6,13 +6,23 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import static java.awt.GridBagConstraints.BOTH;
+import static java.awt.GridBagConstraints.CENTER;
+import static java.awt.GridBagConstraints.LINE_END;
+import static java.awt.GridBagConstraints.LINE_START;
+import static java.awt.GridBagConstraints.NONE;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -22,11 +32,16 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.components.materialtabs.MaterialTab;
 import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
+import net.runelite.client.util.ImageUtil;
+import net.runelite.client.util.LinkBrowser;
 
 @Slf4j
 class NERItemPanel extends JPanel
 {
-	private static final Dimension ICON_SIZE = new Dimension(32, 32);
+	private static final Dimension ICON_SIZE = new Dimension(38, 32);
+
+	private static final BufferedImage WIKI_ICON_DESELECTED = ImageUtil.loadImageResource(NERItemPanel.class, "wiki_icon_deselected.png");
+	private static final BufferedImage WIKI_ICON_SELECTED = ImageUtil.loadImageResource(NERItemPanel.class, "wiki_icon_selected.png");
 
 	private final JPanel tabDisplay = new JPanel();
 	private final MaterialTabGroup tabGroup = new MaterialTabGroup(tabDisplay);
@@ -57,9 +72,31 @@ class NERItemPanel extends JPanel
 		setBorder(new EmptyBorder(0, 0, 10, 0));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
-		JLabel itemIcon = new JLabel();
+		JLabel itemIcon = new JLabel(new ImageIcon(item.getIcon()), SwingConstants.RIGHT);
 		itemIcon.setPreferredSize(ICON_SIZE);
-		itemIcon.setIcon(new ImageIcon(item.getIcon()));
+
+		JLabel wikiIcon = new JLabel(new ImageIcon(WIKI_ICON_DESELECTED));
+		wikiIcon.setPreferredSize(new Dimension(40, 20));
+		wikiIcon.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent mouseEvent)
+			{
+				LinkBrowser.browse(item.getInfoItem().getUrl());
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent mouseEvent)
+			{
+				wikiIcon.setIcon(new ImageIcon(WIKI_ICON_SELECTED));
+			}
+
+			@Override
+			public void mouseExited(MouseEvent mouseEvent)
+			{
+				wikiIcon.setIcon(new ImageIcon(WIKI_ICON_DESELECTED));
+			}
+		});
 
 		JPanel itemInfoRight = new JPanel(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
@@ -88,13 +125,12 @@ class NERItemPanel extends JPanel
 		gbc.gridy++;
 		itemInfoRight.setBackground(getBackground());
 
-		BorderLayout itemLayout = new BorderLayout();
-		itemLayout.setHgap(5);
 		JPanel itemInfo = new JPanel();
-		itemInfo.setLayout(itemLayout);
+		itemInfo.setLayout(new GridBagLayout());
 		itemInfo.setBorder(new EmptyBorder(5, 5, 5, 0));
-		itemInfo.add(itemIcon, BorderLayout.LINE_START);
-		itemInfo.add(itemInfoRight, BorderLayout.CENTER);
+		itemInfo.add(itemIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, LINE_START, NONE, new Insets(0, 0, 0, 0), 4, 4));
+		itemInfo.add(wikiIcon, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, LINE_START, NONE, new Insets(0, 0, 0, 0), 4, 10));
+		itemInfo.add(itemInfoRight, new GridBagConstraints(1, 0, 1, 2, 1.0, 0.0, LINE_END, BOTH, new Insets(0, 0, 0, 0), 4, 4));
 
 
 

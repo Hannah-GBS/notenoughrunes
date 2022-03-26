@@ -2,6 +2,7 @@ package com.notenoughrunes.ui;
 
 import com.google.common.base.Strings;
 import com.notenoughrunes.NotEnoughRunesPlugin;
+import com.notenoughrunes.types.NERInfoItem;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -161,7 +162,7 @@ class NERSearchResultsPanel extends JPanel
 			}
 
 			results = results.stream()
-				.sorted(Comparator.comparing(result -> new LevenshteinDistance().apply(result.getInfoItem().getName(), search)))
+				.sorted(compareNameAndGroup(search))
 				.collect(Collectors.toList());
 
 			SwingUtilities.invokeLater(this::processResult);
@@ -202,5 +203,12 @@ class NERSearchResultsPanel extends JPanel
 
 			constraints.gridy++;
 		}
+	}
+
+	private Comparator<NERItem> compareNameAndGroup(String itemName)
+	{
+		return Comparator.comparing((NERItem item) -> new LevenshteinDistance().apply(item.getInfoItem().getName(), itemName))
+			.thenComparing(item -> new LevenshteinDistance().apply(item.getInfoItem().getGroup(), itemName));
+
 	}
 }

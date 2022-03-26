@@ -25,10 +25,12 @@ import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -48,6 +50,7 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.util.AsyncBufferedImage;
 import net.runelite.client.util.ImageUtil;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 
 @Slf4j
 public class NERRecipePanel extends JPanel
@@ -184,11 +187,12 @@ public class NERRecipePanel extends JPanel
 			JLabel materialLabel = new JLabel();
 			setItemImage(materialLabel, material.getName());
 			materialLabel.setText(material.getName());
+			materialLabel.setToolTipText(material.getName());
 			materialLabel.setMaximumSize(new Dimension(0, 30));
 			materialLabel.setPreferredSize(new Dimension(0, 30));
-			materialRow.add(materialLabel, new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, LINE_START, BOTH, new Insets(0, 8, 0, 0), 4, 4));
+			materialRow.add(materialLabel, new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, LINE_START, BOTH, NO_INSETS, 4, 4));
 
-			materialRow.add(new JLabel("x" + material.getQuantity()), new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, EAST, NONE, NO_INSETS, 4, 4));
+			materialRow.add(new JLabel("x" + material.getQuantity()), new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, EAST, NONE, new Insets(0, 8, 0, 0), 4, 4));
 
 			addMouseAdapter(materialLabel, material.getName(), useName);
 
@@ -201,15 +205,16 @@ public class NERRecipePanel extends JPanel
 		JLabel outputLabel = new JLabel();
 		setItemImage(outputLabel, recipe.getOutput().getName());
 		outputLabel.setText(recipe.getOutput().getName());
+		outputLabel.setToolTipText(recipe.getOutput().getName());
 		outputLabel.setMaximumSize(new Dimension(0, 20));
 		outputLabel.setPreferredSize(new Dimension(0, 20));
 
-		add(outputLabel, new GridBagConstraints(0, row, 3, 1, 1.0, 0.0, LINE_START, BOTH, new Insets(0, 8, 0, 0), 4, 4));
+		add(outputLabel, new GridBagConstraints(0, row, 3, 1, 1.0, 0.0, LINE_START, BOTH, NO_INSETS, 4, 4));
 
 		addMouseAdapter(outputLabel, recipe.getOutput().getName(), useName);
 
 		JLabel quantityLabel = new JLabel("x" + recipe.getOutput().getQuantity());
-		add(quantityLabel, new GridBagConstraints(3, row++, 1, 1, 0.0, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
+		add(quantityLabel, new GridBagConstraints(3, row++, 1, 1, 0.0, 0.0, LINE_END, NONE, new Insets(0, 4, 0, 0), 4, 4));
 		if (recipe.getOutput().getQuantityNote() != null)
 		{
 			quantityLabel.setText("<html><body style=\"border-bottom: 1px dotted #ffffff\">" + quantityLabel.getText() + "*");
@@ -225,10 +230,13 @@ public class NERRecipePanel extends JPanel
 
 	private void setItemImage(JLabel label, String itemName)
 	{
-		int itemId = nerData.getItemInfoData().stream()
-			.filter(item -> item.getName().equals(itemName))
-			.findFirst()
-			.orElse(new NERInfoItem("null item", "", "", 0, false, false))
+		Set<NERInfoItem> matchedItems = nerData.getItemInfoData().stream()
+			.filter(item -> item.getName().contains(itemName) || itemName.contains(item.getName()))
+			.collect(Collectors.toSet());
+
+		int itemId = matchedItems.stream()
+			.min(compareNameAndGroup(itemName))
+			.orElse(new NERInfoItem("null item", "", "", "", 0, false, false))
 			.getItemID();
 
 		clientThread.invokeLater(() -> {
@@ -237,15 +245,22 @@ public class NERRecipePanel extends JPanel
 		});
 	}
 
+	private Comparator<NERInfoItem> compareNameAndGroup(String itemName)
+	{
+		return Comparator.comparing((NERInfoItem item) -> new LevenshteinDistance().apply(item.getName(), itemName))
+			.thenComparing(item -> new LevenshteinDistance().apply(item.getGroup(), itemName));
+
+	}
+
 	private NERItem getNERItem(String itemName)
 	{
-		NERInfoItem itemInfo = Objects.requireNonNull(nerData.getItemInfoData().stream()
-			.filter(item -> item.getName().equals(itemName))
-			.findFirst()
-			.orElse(nerData.getItemInfoData().stream()
-			.filter(item -> item.getGroup().equals(itemName))
-			.findFirst()
-			.orElse(null)));
+		Set<NERInfoItem> matchedItems = nerData.getItemInfoData().stream()
+			.filter(item -> item.getName().contains(itemName) || itemName.contains(item.getName()))
+			.collect(Collectors.toSet());
+
+		NERInfoItem itemInfo = Objects.requireNonNull(matchedItems.stream()
+				.min(compareNameAndGroup(itemName))
+				.orElse(new NERInfoItem("null item", "", "", "", 0, false, false)));
 
 		NERItem nerItem = new NERItem(new AsyncBufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB), itemInfo);
 

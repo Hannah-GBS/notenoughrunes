@@ -10,6 +10,7 @@ public class NERInfoItem
 	private final String name;
 	private final String examineText;
 	private final String group;
+	private final String url;
 	private final int itemID;
 	private final boolean isMembers;
 	private final boolean isTradeable;
