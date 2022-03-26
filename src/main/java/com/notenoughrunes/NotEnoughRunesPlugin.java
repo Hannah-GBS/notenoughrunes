@@ -60,6 +60,7 @@ public class NotEnoughRunesPlugin extends Plugin
 		navButton = NavigationButton.builder()
 			.tooltip("Not Enough Runes")
 			.icon(icon)
+			.priority(5)
 			.panel(nerPanel)
 			.build();
 
