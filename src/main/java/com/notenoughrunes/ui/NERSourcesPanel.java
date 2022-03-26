@@ -102,7 +102,7 @@ class NERSourcesPanel extends JPanel
 		GridBagConstraints containerGbc = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
 		JPanel recipeSection = createSection(SectionType.RECIPES);
 		JPanel container = new JPanel(new GridBagLayout());
-		container.add(recipeSection,containerGbc);
+		container.add(recipeSection, containerGbc);
 		containerGbc.gridy++;
 		JPanel dropsSection = createSection(SectionType.DROPS);
 		container.add(dropsSection, containerGbc);
@@ -132,7 +132,7 @@ class NERSourcesPanel extends JPanel
 	private JPanel createSection(SectionType sectionType)
 	{
 		ArrayList<JPanel> sectionItems = new ArrayList<>();
-		switch(sectionType)
+		switch (sectionType)
 		{
 			case RECIPES:
 				Set<NERProductionRecipe> recipes = nerData.getItemProductionData().stream()
@@ -140,7 +140,8 @@ class NERSourcesPanel extends JPanel
 					.limit(MAX_ENTRIES)
 					.collect(Collectors.toSet());
 
-				recipes.forEach((recipe) -> {
+				recipes.forEach((recipe) ->
+				{
 					NERRecipePanel panel = new NERRecipePanel(recipe, itemManager, nerData, clientThread, mainPanel, useName);
 					sectionItems.add(panel);
 				});

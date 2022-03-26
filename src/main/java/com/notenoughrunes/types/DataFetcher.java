@@ -133,7 +133,7 @@ public class DataFetcher
 
 	private String getRemoteJson(String path, boolean saveFile) throws IOException
 	{
-		String url = "https://raw.githubusercontent.com/Hannah-GBS/runelite-wiki-scraper/master/output/" + path;
+		String url = "https://raw.githubusercontent.com/Hannah-GBS/runelite-wiki-scraper/wiki-data/output/" + path;
 
 		try (InputStream inputStream = new URL(url).openStream())
 		{

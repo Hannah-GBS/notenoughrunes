@@ -12,34 +12,26 @@ import java.awt.GridBagConstraints;
 import static java.awt.GridBagConstraints.BOTH;
 import static java.awt.GridBagConstraints.CENTER;
 import static java.awt.GridBagConstraints.EAST;
-import static java.awt.GridBagConstraints.HORIZONTAL;
 import static java.awt.GridBagConstraints.LINE_END;
 import static java.awt.GridBagConstraints.LINE_START;
 import static java.awt.GridBagConstraints.NONE;
-import static java.awt.GridBagConstraints.WEST;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -110,7 +102,8 @@ public class NERRecipePanel extends JPanel
 			try
 			{
 				return ImageUtil.loadImageResource(NERRecipePanel.class, "recipe_facility_icons/" + name + ".png");
-			} catch (Exception e)
+			}
+			catch (Exception e)
 			{
 				return new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
 			}
@@ -168,10 +161,6 @@ public class NERRecipePanel extends JPanel
 
 		add(skillsPanel, new GridBagConstraints(0, row++, 4, 1, 0.0, 0.0, LINE_START, BOTH, NO_INSETS, 4, 4));
 
-//		JSeparator actionSeparator = new JSeparator(JSeparator.HORIZONTAL);
-//		actionSeparator.setBackground(ColorScheme.LIGHT_GRAY_COLOR);
-//		actionSeparator.setPreferredSize(new Dimension(1, 6));
-//		add(actionSeparator, new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, HORIZONTAL, NO_INSETS, 0, 0));
 		JLabel materialHeader = new JLabel("Materials");
 		add(materialHeader, new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
 
@@ -214,18 +203,13 @@ public class NERRecipePanel extends JPanel
 		addMouseAdapter(outputLabel, recipe.getOutput().getName(), useName);
 
 		JLabel quantityLabel = new JLabel("x" + recipe.getOutput().getQuantity());
-		add(quantityLabel, new GridBagConstraints(3, row++, 1, 1, 0.0, 0.0, LINE_END, NONE, new Insets(0, 4, 0, 0), 4, 4));
+		add(quantityLabel, new GridBagConstraints(3, row, 1, 1, 0.0, 0.0, LINE_END, NONE, new Insets(0, 4, 0, 0), 4, 4));
 		if (recipe.getOutput().getQuantityNote() != null)
 		{
 			quantityLabel.setText("<html><body style=\"border-bottom: 1px dotted #ffffff\">" + quantityLabel.getText() + "*");
 			String tooltipText = recipe.getOutput().getQuantityNote().replaceAll("[\\[\\]]|<[^>]*>", "");
 			quantityLabel.setToolTipText(String.format("<html><p width=\"%d\">%s</p></html>", 200, tooltipText));
 		}
-
-//		JSeparator resultSeparator = new JSeparator(JSeparator.HORIZONTAL);
-//		resultSeparator.setBackground(ColorScheme.LIGHT_GRAY_COLOR);
-//		resultSeparator.setPreferredSize(new Dimension(1, 2));
-//		add(resultSeparator, new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, HORIZONTAL, NO_INSETS, 0, 0));
 	}
 
 	private void setItemImage(JLabel label, String itemName)
@@ -239,7 +223,8 @@ public class NERRecipePanel extends JPanel
 			.orElse(new NERInfoItem("null item", "", "", "", 0, false, false))
 			.getItemID();
 
-		clientThread.invokeLater(() -> {
+		clientThread.invokeLater(() ->
+		{
 			AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemId));
 			SwingUtilities.invokeLater(() -> label.setIcon(new ImageIcon(itemImage)));
 		});

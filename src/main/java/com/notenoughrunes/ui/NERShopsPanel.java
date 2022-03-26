@@ -8,21 +8,16 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import static java.awt.GridBagConstraints.BOTH;
-import static java.awt.GridBagConstraints.CENTER;
-import static java.awt.GridBagConstraints.HORIZONTAL;
 import static java.awt.GridBagConstraints.LINE_END;
 import static java.awt.GridBagConstraints.LINE_START;
 import static java.awt.GridBagConstraints.NONE;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import lombok.extern.slf4j.Slf4j;
@@ -98,9 +93,10 @@ public class NERShopsPanel extends JPanel
 					shopName.setForeground(new Color(209, 174, 59));
 				}
 
-				shopPanel.add(shopName, new GridBagConstraints(0, row, 1, 1, 1.0, 0.0, LINE_START, BOTH, new Insets(0,4,0,0), 4, 4));
+				shopPanel.add(shopName, new GridBagConstraints(0, row, 1, 1, 1.0, 0.0, LINE_START, BOTH, new Insets(0, 4, 0, 0), 4, 4));
 				int finalRow = row;
-				clientThread.invokeLater(() -> {
+				clientThread.invokeLater(() ->
+				{
 					String sellPrice;
 					if (shop.getSellMultiplier() != null)
 					{
@@ -122,9 +118,7 @@ public class NERShopsPanel extends JPanel
 					}
 					String finalSellPrice = sellPrice;
 					SwingUtilities.invokeLater(() ->
-					{
-						shopPanel.add(new JLabel(finalSellPrice), new GridBagConstraints(1, finalRow, 1, 1, 0.1, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
-					});
+						shopPanel.add(new JLabel(finalSellPrice), new GridBagConstraints(1, finalRow, 1, 1, 0.1, 0.0, LINE_END, NONE, NO_INSETS, 4, 4)));
 				});
 				row++;
 
@@ -139,7 +133,7 @@ public class NERShopsPanel extends JPanel
 				location.setPreferredSize(new Dimension(0, 20));
 				location.setText(shop.getLocation());
 				location.setToolTipText(shop.getLocation());
-				shopPanel.add(location, new GridBagConstraints(0, row, 1, 1, 1.0, 0.0, LINE_START, BOTH, new Insets(0,4,0,0), 4, 4));
+				shopPanel.add(location, new GridBagConstraints(0, row, 1, 1, 1.0, 0.0, LINE_START, BOTH, new Insets(0, 4, 0, 0), 4, 4));
 				shopPanel.add(new JLabel("x" + shopItem.getStock()), new GridBagConstraints(1, row++, 1, 1, 0.1, 0.0, LINE_END, NONE, NO_INSETS, 4, 4));
 
 				container.add(shopPanel);

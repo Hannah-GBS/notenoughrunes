@@ -4,7 +4,6 @@ import com.notenoughrunes.NotEnoughRunesPlugin;
 import com.notenoughrunes.types.NERData;
 import com.notenoughrunes.types.NERProductionRecipe;
 import com.notenoughrunes.types.NERShop;
-import com.notenoughrunes.types.NERSpawnItem;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -14,7 +13,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
@@ -97,7 +95,7 @@ class NERUsesPanel extends JPanel
 		GridBagConstraints containerGbc = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
 		JPanel recipeSection = createSection(SectionType.RECIPES);
 		JPanel container = new JPanel(new GridBagLayout());
-		container.add(recipeSection,containerGbc);
+		container.add(recipeSection, containerGbc);
 		containerGbc.gridy++;
 		JPanel shopsSection = createSection(SectionType.SHOPS);
 		container.add(shopsSection, containerGbc);
@@ -120,7 +118,7 @@ class NERUsesPanel extends JPanel
 	private JPanel createSection(SectionType sectionType)
 	{
 		ArrayList<JPanel> sectionItems = new ArrayList<>();
-		switch(sectionType)
+		switch (sectionType)
 		{
 			case RECIPES:
 				Set<NERProductionRecipe> recipes = nerData.getItemProductionData().stream()
@@ -128,7 +126,8 @@ class NERUsesPanel extends JPanel
 						.anyMatch(material -> material.getName().equals(useName)))
 						.collect(Collectors.toSet());
 
-				recipes.forEach((recipe) -> {
+				recipes.forEach((recipe) ->
+				{
 					NERRecipePanel panel = new NERRecipePanel(recipe, itemManager, nerData, clientThread, mainPanel, useName);
 					sectionItems.add(panel);
 				});

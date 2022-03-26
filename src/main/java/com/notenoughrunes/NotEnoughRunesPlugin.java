@@ -4,18 +4,10 @@ import com.google.gson.Gson;
 import com.google.inject.Provides;
 import com.notenoughrunes.types.DataFetcher;
 import com.notenoughrunes.types.NERData;
-import com.notenoughrunes.types.NERDropItem;
-import com.notenoughrunes.types.NERDropSource;
-import com.notenoughrunes.types.NERInfoItem;
 import com.notenoughrunes.ui.NERPanel;
 import java.awt.image.BufferedImage;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 import lombok.AccessLevel;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +23,9 @@ import net.runelite.client.util.ImageUtil;
 
 @Slf4j
 @PluginDescriptor(
-	name = "Not Enough Runes"
+	name = "Not Enough Runes",
+	description = "Shows wiki-sourced information where items can be found and what they're used for",
+	tags = {"recipe", "crafting", "sources", "Uses", "wiki", "ner"}
 )
 public class NotEnoughRunesPlugin extends Plugin
 {
@@ -72,31 +66,15 @@ public class NotEnoughRunesPlugin extends Plugin
 		clientToolbar.addNavigation(navButton);
 
 		nerData = new NERData(new DataFetcher());
-//		Stream<NERDropItem> list = nerData.getItemDropData().stream().filter(item -> item.getDropSources().stream().anyMatch(source -> source.source.equals("Fire giant")));
-//		Set<NERDropItem> newList = new HashSet<NERDropItem>();
-//		list.forEach(item -> {
-//			Set<NERDropSource> sources = item.getDropSources().stream().filter(source -> source.source.equals("Fire giant")).collect(Collectors.toSet());
-//			newList.add(new NERDropItem(item.getName(), sources));
-//		});
-
-//		Set<NERDropItem> newList = nerData.getItemDropData().stream()
-//			.filter(item -> item.getName().equals("Big bones"))
-//			.collect(Collectors.toSet());
-
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
-//		nerPanel.shutdown();
+		nerPanel = null;
 		clientToolbar.removeNavigation(navButton);
 	}
 
-	@Subscribe
-	public void onGameStateChanged(GameStateChanged gameStateChanged)
-	{
-
-	}
 
 	@Provides
 	NotEnoughRunesConfig provideConfig(ConfigManager configManager)

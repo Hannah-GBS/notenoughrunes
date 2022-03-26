@@ -31,7 +31,8 @@ public class RarityParser
 			return PRESET_RARITY_NAMES.get(rarityString);
 		}
 			
-		try {
+		try
+		{
 			String[] fractionComponents = rarityString.split("/");
 			return Double.parseDouble(fractionComponents[0].trim()) / Double.parseDouble(fractionComponents[1].trim());
 		}

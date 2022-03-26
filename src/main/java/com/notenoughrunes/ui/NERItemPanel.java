@@ -7,7 +7,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import static java.awt.GridBagConstraints.BOTH;
-import static java.awt.GridBagConstraints.CENTER;
 import static java.awt.GridBagConstraints.LINE_END;
 import static java.awt.GridBagConstraints.LINE_START;
 import static java.awt.GridBagConstraints.NONE;
@@ -42,11 +41,6 @@ class NERItemPanel extends JPanel
 
 	private static final BufferedImage WIKI_ICON_DESELECTED = ImageUtil.loadImageResource(NERItemPanel.class, "wiki_icon_deselected.png");
 	private static final BufferedImage WIKI_ICON_SELECTED = ImageUtil.loadImageResource(NERItemPanel.class, "wiki_icon_selected.png");
-
-	private final JPanel tabDisplay = new JPanel();
-	private final MaterialTabGroup tabGroup = new MaterialTabGroup(tabDisplay);
-	private final MaterialTab sourcesTab;
-	private final MaterialTab usesTab;
 
 	@Getter
 	private final NERSourcesPanel sourcesPanel;
@@ -133,9 +127,10 @@ class NERItemPanel extends JPanel
 		itemInfo.add(itemInfoRight, new GridBagConstraints(1, 0, 1, 2, 1.0, 0.0, LINE_END, BOTH, new Insets(0, 0, 0, 0), 4, 4));
 
 
-
-		sourcesTab = new MaterialTab("Sources", tabGroup, sourcesPanel);
-		usesTab = new MaterialTab("Uses", tabGroup, usesPanel);
+		JPanel tabDisplay = new JPanel();
+		MaterialTabGroup tabGroup = new MaterialTabGroup(tabDisplay);
+		MaterialTab sourcesTab = new MaterialTab("Sources", tabGroup, sourcesPanel);
+		MaterialTab usesTab = new MaterialTab("Uses", tabGroup, usesPanel);
 
 		tabGroup.setBorder(new EmptyBorder(0, 0, 0, 0));
 		tabGroup.addTab(sourcesTab);

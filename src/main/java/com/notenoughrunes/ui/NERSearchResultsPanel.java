@@ -2,7 +2,6 @@ package com.notenoughrunes.ui;
 
 import com.google.common.base.Strings;
 import com.notenoughrunes.NotEnoughRunesPlugin;
-import com.notenoughrunes.types.NERInfoItem;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -143,7 +142,8 @@ class NERSearchResultsPanel extends JPanel
 
 		this.clientThread.invokeLater(() ->
 		{
-			plugin.getNerData().getItemInfoData().forEach((itemInfo) -> {
+			plugin.getNerData().getItemInfoData().forEach((itemInfo) ->
+			{
 				if (itemInfo.getName().toLowerCase().contains(search.toLowerCase()) && results.size() < MAX_RESULTS && results.stream().noneMatch(s -> s.getInfoItem().getItemID() == itemInfo.getItemID()))
 				{
 					AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));

@@ -23,7 +23,6 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +59,8 @@ public class NERDropsPanel extends JPanel
 				{
 					return ImageUtil.loadImageResource(NERDropsPanel.class, "drop_source_types/" + name + ".png");
 				}
-			} catch (Exception e)
+			}
+			catch (Exception e)
 			{
 				return new BufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB);
 			}
