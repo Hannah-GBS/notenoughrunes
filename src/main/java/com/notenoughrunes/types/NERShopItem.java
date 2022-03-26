@@ -1,6 +1,6 @@
 package com.notenoughrunes.types;
 
-import jdk.internal.jline.internal.Nullable;
+import javax.annotation.Nullable;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
