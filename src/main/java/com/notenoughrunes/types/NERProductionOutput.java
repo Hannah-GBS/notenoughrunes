@@ -19,4 +19,7 @@ public class NERProductionOutput
 	@Nullable
 	@SerializedName("quantitynote")
 	private final String quantityNote;
+
+	@Nullable
+	private final String version;
 }

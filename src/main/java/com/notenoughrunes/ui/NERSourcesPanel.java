@@ -30,6 +30,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
@@ -39,7 +40,7 @@ import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.SwingUtil;
 
-
+@Slf4j
 class NERSourcesPanel extends JPanel
 {
 	private static final ImageIcon SECTION_EXPAND_ICON;
@@ -136,7 +137,7 @@ class NERSourcesPanel extends JPanel
 		{
 			case RECIPES:
 				Set<NERProductionRecipe> recipes = nerData.getItemProductionData().stream()
-					.filter(itemRecipe -> itemRecipe.getOutput().getName().equals(useName))
+					.filter(itemRecipe -> itemRecipe.getOutput().getName().equals(useName) && (itemRecipe.getOutput().getVersion() == null || nerItem.getInfoItem().getVersion() == null || itemRecipe.getOutput().getVersion().equals(nerItem.getInfoItem().getVersion())))
 					.limit(MAX_ENTRIES)
 					.collect(Collectors.toSet());
 
@@ -158,7 +159,7 @@ class NERSourcesPanel extends JPanel
 			case SHOPS:
 				Set<NERShop> shops = nerData.getItemShopData().stream()
 					.filter(shop -> shop.getItems().stream()
-						.anyMatch(item -> item.getName().equals(useName)))
+						.anyMatch(item -> item.getName().equals(useName) && (item.getVersion() == null || nerItem.getInfoItem().getVersion() == null || item.getVersion().equals(nerItem.getInfoItem().getVersion()))))
 					.collect(Collectors.toSet());
 
 				if (shops.size() < 1)

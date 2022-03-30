@@ -174,7 +174,7 @@ public class NERRecipePanel extends JPanel
 			JPanel materialRow = new JPanel(new GridBagLayout());
 			materialRow.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 			JLabel materialLabel = new JLabel();
-			setItemImage(materialLabel, material.getName());
+			setItemImage(materialLabel, material.getName(), material.getVersion());
 			materialLabel.setText(material.getName());
 			materialLabel.setToolTipText(material.getName());
 			materialLabel.setMaximumSize(new Dimension(0, 30));
@@ -183,7 +183,7 @@ public class NERRecipePanel extends JPanel
 
 			materialRow.add(new JLabel("x" + material.getQuantity()), new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, EAST, NONE, new Insets(0, 8, 0, 0), 4, 4));
 
-			addMouseAdapter(materialLabel, material.getName(), useName);
+			addMouseAdapter(materialLabel, material.getName(), material.getVersion(), useName);
 
 			add(materialRow, new GridBagConstraints(0, row++, 4, 1, 0.0, 0.0, CENTER, BOTH, NO_INSETS, 4, 4));
 		}
@@ -192,7 +192,7 @@ public class NERRecipePanel extends JPanel
 
 		add(new JLabel("Output"), new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
 		JLabel outputLabel = new JLabel();
-		setItemImage(outputLabel, recipe.getOutput().getName());
+		setItemImage(outputLabel, recipe.getOutput().getName(), recipe.getOutput().getVersion());
 		outputLabel.setText(recipe.getOutput().getName());
 		outputLabel.setToolTipText(recipe.getOutput().getName());
 		outputLabel.setMaximumSize(new Dimension(0, 20));
@@ -200,7 +200,7 @@ public class NERRecipePanel extends JPanel
 
 		add(outputLabel, new GridBagConstraints(0, row, 3, 1, 1.0, 0.0, LINE_START, BOTH, NO_INSETS, 4, 4));
 
-		addMouseAdapter(outputLabel, recipe.getOutput().getName(), useName);
+		addMouseAdapter(outputLabel, recipe.getOutput().getName(), recipe.getOutput().getVersion(), useName);
 
 		JLabel quantityLabel = new JLabel("x" + recipe.getOutput().getQuantity());
 		add(quantityLabel, new GridBagConstraints(3, row, 1, 1, 0.0, 0.0, LINE_END, NONE, new Insets(0, 4, 0, 0), 4, 4));
@@ -212,16 +212,9 @@ public class NERRecipePanel extends JPanel
 		}
 	}
 
-	private void setItemImage(JLabel label, String itemName)
+	private void setItemImage(JLabel label, String itemName, String version)
 	{
-		Set<NERInfoItem> matchedItems = nerData.getItemInfoData().stream()
-			.filter(item -> item.getName().contains(itemName) || itemName.contains(item.getName()))
-			.collect(Collectors.toSet());
-
-		int itemId = matchedItems.stream()
-			.min(compareNameAndGroup(itemName))
-			.orElse(new NERInfoItem("null item", "", "", "", 0, false, false))
-			.getItemID();
+		int itemId = NERPanel.getItemId(itemName, version);
 
 		clientThread.invokeLater(() ->
 		{
@@ -230,22 +223,23 @@ public class NERRecipePanel extends JPanel
 		});
 	}
 
-	private Comparator<NERInfoItem> compareNameAndGroup(String itemName)
+	private Comparator<NERInfoItem> compareNameAndGroup(String itemName, String version)
 	{
 		return Comparator.comparing((NERInfoItem item) -> new LevenshteinDistance().apply(item.getName(), itemName))
-			.thenComparing(item -> new LevenshteinDistance().apply(item.getGroup(), itemName));
+			.thenComparing(item -> new LevenshteinDistance().apply(item.getGroup(), itemName))
+			.thenComparing(item -> new LevenshteinDistance().apply(item.getVersion() != null ? item.getVersion() : "", version != null ? version : ""));
 
 	}
 
-	private NERItem getNERItem(String itemName)
+	private NERItem getNERItem(String itemName, String version)
 	{
 		Set<NERInfoItem> matchedItems = nerData.getItemInfoData().stream()
 			.filter(item -> item.getName().contains(itemName) || itemName.contains(item.getName()))
 			.collect(Collectors.toSet());
 
 		NERInfoItem itemInfo = Objects.requireNonNull(matchedItems.stream()
-				.min(compareNameAndGroup(itemName))
-				.orElse(new NERInfoItem("null item", "", "", "", 0, false, false)));
+				.min(compareNameAndGroup(itemName, version))
+				.orElse(new NERInfoItem("null item", "", "", "", "", 0, false, false)));
 
 		NERItem nerItem = new NERItem(new AsyncBufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB), itemInfo);
 
@@ -267,14 +261,14 @@ public class NERRecipePanel extends JPanel
 		toUnderline.setToolTipText(tooltip);
 	}
 
-	private void addMouseAdapter(JLabel materialLabel, String materialName, String useName)
+	private void addMouseAdapter(JLabel materialLabel, String materialName, String version, String useName)
 	{
 		if (materialName.equals(useName))
 		{
 			return;
 		}
 
-		NERItem materialNERItem = getNERItem(materialName);
+		NERItem materialNERItem = getNERItem(materialName, version);
 
 		materialLabel.addMouseListener(new MouseAdapter()
 		{

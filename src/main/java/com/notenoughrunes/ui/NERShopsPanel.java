@@ -70,6 +70,7 @@ public class NERShopsPanel extends JPanel
 					.collect(Collectors.toSet());
 			}
 
+
 			for (NERShopItem shopItem : shopItems)
 			{
 				if (entries >= MAX_ENTRIES)
@@ -100,8 +101,15 @@ public class NERShopsPanel extends JPanel
 					String sellPrice;
 					if (shop.getSellMultiplier() != null)
 					{
-						sellPrice = String.valueOf(itemManager.getItemComposition(
-							itemManager.canonicalize(nerItem.getInfoItem().getItemID())).getPrice() * (Integer.parseInt(shop.getSellMultiplier()) / 1000));
+						if (isCurrency) {
+							sellPrice = String.valueOf(itemManager.getItemComposition(
+								itemManager.canonicalize(NERPanel.getItemId(shopItem.getName(), shopItem.getVersion()))).getPrice() * (Integer.parseInt(shop.getSellMultiplier()) / 1000));
+						}
+						else
+						{
+							sellPrice = String.valueOf(itemManager.getItemComposition(
+								itemManager.canonicalize(nerItem.getInfoItem().getItemID())).getPrice() * (Integer.parseInt(shop.getSellMultiplier()) / 1000));
+						}
 					}
 					else
 					{

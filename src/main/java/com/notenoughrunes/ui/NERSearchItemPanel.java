@@ -26,7 +26,7 @@ class NERSearchItemPanel extends JPanel
 		BorderLayout layout = new BorderLayout();
 		layout.setHgap(5);
 		setLayout(layout);
-		setToolTipText(item.getInfoItem().getGroup());
+		setToolTipText(item.getInfoItem().getGroup() + (item.getInfoItem().getVersion() != null && !item.getInfoItem().getVersion().isEmpty()  ? (" - " + item.getInfoItem().getVersion()) : ""));
 		setBackground(ColorScheme.DARKER_GRAY_COLOR);
 
 		Color background = getBackground();

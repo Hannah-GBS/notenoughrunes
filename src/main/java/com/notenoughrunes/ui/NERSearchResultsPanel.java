@@ -186,6 +186,7 @@ class NERSearchResultsPanel extends JPanel
 			{
 				break;
 			}
+
 			NERSearchItemPanel panel = new NERSearchItemPanel(nerItem, parentPanel);
 			if (index++ > 0)
 			{

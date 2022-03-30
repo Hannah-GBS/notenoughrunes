@@ -9,6 +9,10 @@ import lombok.RequiredArgsConstructor;
 public class NERShopItem
 {
 	private final String name;
+
+	@Nullable
+	private final String version;
+
 	private final String currency;
 	private final String stock;
 

@@ -12,4 +12,7 @@ public class NERProductionMaterial
 
 	@Nullable
 	private final String quantity;
+
+	@Nullable
+	private final String version;
 }

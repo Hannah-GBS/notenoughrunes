@@ -123,7 +123,7 @@ class NERUsesPanel extends JPanel
 			case RECIPES:
 				Set<NERProductionRecipe> recipes = nerData.getItemProductionData().stream()
 					.filter(itemRecipe -> itemRecipe.getMaterials().stream()
-						.anyMatch(material -> material.getName().equals(useName)))
+						.anyMatch(material -> material.getName().equals(useName) && (material.getVersion() == null || material.getVersion().equals(nerItem.getInfoItem().getVersion()))))
 						.collect(Collectors.toSet());
 
 				recipes.forEach((recipe) ->

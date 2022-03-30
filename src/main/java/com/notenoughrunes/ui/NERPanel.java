@@ -4,9 +4,13 @@ import com.google.common.base.Strings;
 import com.notenoughrunes.NotEnoughRunesConfig;
 import com.notenoughrunes.NotEnoughRunesPlugin;
 import com.notenoughrunes.types.NERData;
+import com.notenoughrunes.types.NERInfoItem;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.Comparator;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -19,6 +23,7 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 
 @Slf4j
 public class NERPanel extends PluginPanel
@@ -28,7 +33,7 @@ public class NERPanel extends PluginPanel
 	private final IconTextField searchBar = new IconTextField();
 	private final ClientThread clientThread;
 	private final ItemManager itemManager;
-	private final NERData nerData;
+	private static NERData nerData;
 
 	public final static int MAX_ENTRIES = 100;
 
@@ -49,7 +54,7 @@ public class NERPanel extends PluginPanel
 		this.searchResultsPanel = new NERSearchResultsPanel(plugin, client, clientThread, itemManager, this);
 		this.clientThread = clientThread;
 		this.itemManager = itemManager;
-		this.nerData = nerData;
+		NERPanel.nerData = nerData;
 
 		setLayout(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
@@ -116,5 +121,25 @@ public class NERPanel extends PluginPanel
 		currentPanel = itemPanel;
 		add(itemPanel, BorderLayout.CENTER);
 		updateUI();
+	}
+
+	public static int getItemId(String itemName, String version)
+	{
+		Set<NERInfoItem> matchedItems = nerData.getItemInfoData().stream()
+			.filter(item -> item.getName().contains(itemName) || itemName.contains(item.getName()))
+			.collect(Collectors.toSet());
+
+		return matchedItems.stream()
+			.min(compareNameAndGroup(itemName, version))
+			.orElse(new NERInfoItem("null item", "", "", "", "", 0, false, false))
+			.getItemID();
+	}
+
+	private static Comparator<NERInfoItem> compareNameAndGroup(String itemName, String version)
+	{
+		return Comparator.comparing((NERInfoItem item) -> new LevenshteinDistance().apply(item.getName(), itemName))
+			.thenComparing(item -> new LevenshteinDistance().apply(item.getGroup(), itemName))
+			.thenComparing(item -> new LevenshteinDistance().apply(item.getVersion() != null ? item.getVersion() : "", version != null ? version : ""));
+
 	}
 }
