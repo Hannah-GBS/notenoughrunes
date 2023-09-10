@@ -13,6 +13,7 @@ import java.awt.Insets;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,16 +36,22 @@ public class NERDropsPanel extends JPanel
 	
 	private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("#.##%");
 
-	private static final Map<String, BufferedImage> dropTypeImages = Stream.of(
+	private static final String[] dropTypes = {
+		"agility",
 		"combat",
-		"reward",
+		"farming",
+		"firemaking",
+		"fishing",
 		"hunter",
 		"mining",
+		"reward",
+		"smithing",
 		"woodcutting",
-		"fishing",
 		"thieving",
-		"farming",
 		""
+	};
+	private static final Map<String, BufferedImage> dropTypeImages = Stream.of(
+		dropTypes
 	).collect(Collectors.toMap(
 		Function.identity(),
 		name ->
@@ -102,9 +109,13 @@ public class NERDropsPanel extends JPanel
 				gbc.fill = GridBagConstraints.NONE;
 				dropPanel.add(new JLabel(buildQuantityString(dropSource)), gbc);
 
-				JLabel dropType = new JLabel(dropSource.getDropLevel(), new ImageIcon(dropTypeImages.get(dropSource.getDropType())), SwingConstants.CENTER);
-				dropType.setText(dropSource.getDropLevel());
-				dropType.setIcon(new ImageIcon(dropTypeImages.get(dropSource.getDropType())));
+				JLabel dropType = new JLabel(dropSource.getDropLevel() + " " + dropSource.getDropType(), SwingConstants.CENTER);
+				ImageIcon dropTypeIcon = new ImageIcon(new BufferedImage(1, 20, BufferedImage.TYPE_INT_ARGB));
+				if (Arrays.asList(dropTypes).contains(dropSource.getDropType())) {
+					dropTypeIcon = new ImageIcon(dropTypeImages.get(dropSource.getDropType()));
+					dropType.setText(dropSource.getDropLevel());
+				}
+				dropType.setIcon(dropTypeIcon);
 				dropType.setToolTipText(dropSource.getDropLevel());
 				dropType.setPreferredSize(new Dimension(20, 20));
 				gbc.gridx = 1;
