@@ -34,7 +34,7 @@ public class RarityParser
 		try
 		{
 			String[] fractionComponents = rarityString.split("/");
-			return Double.parseDouble(fractionComponents[0].trim()) / Double.parseDouble(fractionComponents[1].trim());
+			return Double.parseDouble(fractionComponents[0].trim().replace(",","")) / Double.parseDouble(fractionComponents[1].trim().replace(",",""));
 		}
 		catch (NumberFormatException | ArithmeticException | ArrayIndexOutOfBoundsException e)
 		{
