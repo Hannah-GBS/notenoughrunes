@@ -1,7 +1,8 @@
 package com.notenoughrunes.ui;
 
 import com.google.common.base.Strings;
-import com.notenoughrunes.NotEnoughRunesPlugin;
+import com.notenoughrunes.db.H2DataProvider;
+import com.notenoughrunes.db.queries.SearchItemsQuery;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -17,7 +18,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.Client;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
@@ -41,26 +41,21 @@ class NERSearchResultsPanel extends JPanel
 	private final PluginErrorPanel errorPanel = new PluginErrorPanel();
 
 	private List<NERItem> results = new ArrayList<>();
-	private final NotEnoughRunesPlugin plugin;
-	private final Client client;
 	private final ClientThread clientThread;
 	private final ItemManager itemManager;
+	private final H2DataProvider dataProvider;
 	private final NERPanel parentPanel;
 
-	@Value
-	private static class ItemIcon
+	NERSearchResultsPanel(
+		ClientThread clientThread,
+		ItemManager itemManager,
+		H2DataProvider dataProvider,
+		NERPanel parentPanel
+	)
 	{
-		int modelId;
-		short[] colorsToReplace;
-		short[] texturesToReplace;
-	}
-
-	NERSearchResultsPanel(NotEnoughRunesPlugin plugin, Client client, ClientThread clientThread, ItemManager itemManager, NERPanel parentPanel)
-	{
-		this.plugin = plugin;
-		this.client = client;
 		this.clientThread = clientThread;
 		this.itemManager = itemManager;
+		this.dataProvider = dataProvider;
 		this.parentPanel = parentPanel;
 		setLayout(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
@@ -142,15 +137,12 @@ class NERSearchResultsPanel extends JPanel
 
 		this.clientThread.invokeLater(() ->
 		{
-			plugin.getNerData().getItemInfoData().forEach((itemInfo) ->
-			{
-				if (itemInfo.getName().toLowerCase().contains(search.toLowerCase()) && results.size() < MAX_RESULTS && results.stream().noneMatch(s -> s.getInfoItem().getItemID() == itemInfo.getItemID()))
+			this.dataProvider.executeMany(new SearchItemsQuery(search))
+				.forEach((itemInfo) ->
 				{
 					AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
 					results.add(new NERItem(itemImage, itemInfo));
-				}
-			});
-
+				});
 
 			if (results.isEmpty())
 			{

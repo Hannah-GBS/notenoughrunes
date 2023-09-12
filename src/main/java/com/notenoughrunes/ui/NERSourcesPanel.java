@@ -1,7 +1,11 @@
 package com.notenoughrunes.ui;
 
 import com.notenoughrunes.NotEnoughRunesPlugin;
-import com.notenoughrunes.types.NERData;
+import com.notenoughrunes.db.H2DataProvider;
+import com.notenoughrunes.db.queries.ItemDropSourcesQuery;
+import com.notenoughrunes.db.queries.ItemProducedByQuery;
+import com.notenoughrunes.types.NERDropItem;
+import com.notenoughrunes.types.NERDropSource;
 import com.notenoughrunes.types.NERProductionRecipe;
 import com.notenoughrunes.types.NERShop;
 import com.notenoughrunes.types.NERSpawnItem;
@@ -16,6 +20,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
@@ -52,7 +57,7 @@ class NERSourcesPanel extends JPanel
 	static final ImageIcon BACK_ICON_HOVER;
 
 	private final NERItem nerItem;
-	private final NERData nerData;
+	private final H2DataProvider dataProvider;
 	private final ItemManager itemManager;
 	private final ClientThread clientThread;
 	private final String useName;
@@ -86,10 +91,10 @@ class NERSourcesPanel extends JPanel
 		SECTION_RETRACT_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(sectionExpandIcon, -100));
 	}
 
-	NERSourcesPanel(NERItem nerItem, ItemManager itemManager, NERData nerData, ClientThread clientThread, NERPanel mainPanel)
+	NERSourcesPanel(NERItem nerItem, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel)
 	{
 		this.nerItem = nerItem;
-		this.nerData = nerData;
+		this.dataProvider = dataProvider;
 		this.itemManager = itemManager;
 		this.clientThread = clientThread;
 		this.mainPanel = mainPanel;
@@ -136,28 +141,23 @@ class NERSourcesPanel extends JPanel
 		switch (sectionType)
 		{
 			case RECIPES:
-				Set<NERProductionRecipe> recipes = nerData.getItemProductionData().stream()
-					.filter(itemRecipe -> itemRecipe.getOutput().getName().equals(useName) && (itemRecipe.getOutput().getVersion() == null || nerItem.getInfoItem().getVersion() == null || itemRecipe.getOutput().getVersion().equals(nerItem.getInfoItem().getVersion())))
-					.limit(MAX_ENTRIES)
-					.collect(Collectors.toSet());
-
-				recipes.forEach((recipe) ->
+				dataProvider.executeMany(new ItemProducedByQuery(useName, nerItem.getInfoItem().getVersion()))
+					.forEach((recipe) ->
 				{
-					NERRecipePanel panel = new NERRecipePanel(recipe, itemManager, nerData, clientThread, mainPanel, useName);
+					NERRecipePanel panel = new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName);
 					sectionItems.add(panel);
 				});
 				break;
 
 			case DROPS:
-				nerData.getItemDropData().stream()
-					.filter(dropItem -> dropItem.getName().equals(useName))
-					.findFirst()
-					.map(NERDropsPanel::new)
-					.ifPresent(sectionItems::add);
+				List<NERDropSource> dropSources = dataProvider.executeMany(new ItemDropSourcesQuery(useName));
+				if (!dropSources.isEmpty()) {
+					sectionItems.add(new NERDropsPanel(new NERDropItem(useName, dropSources)));
+				}
 				break;
 
 			case SHOPS:
-				Set<NERShop> shops = nerData.getItemShopData().stream()
+				Set<NERShop> shops = dataProvider.getItemShopData().stream()
 					.filter(shop -> shop.getItems().stream()
 						.anyMatch(item -> item.getName().equals(useName) && (item.getVersion() == null || nerItem.getInfoItem().getVersion() == null || item.getVersion().equals(nerItem.getInfoItem().getVersion()))))
 					.collect(Collectors.toSet());
@@ -173,7 +173,7 @@ class NERSourcesPanel extends JPanel
 				break;
 
 			case SPAWNS:
-				nerData.getItemSpawnData().stream()
+				dataProvider.getItemSpawnData().stream()
 					.flatMap(spawnGroup -> spawnGroup.getSpawns().stream()
 						.filter(spawnItem -> spawnItem.getName().equals(useName)))
 					.distinct()

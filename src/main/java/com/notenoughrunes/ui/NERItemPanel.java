@@ -1,6 +1,6 @@
 package com.notenoughrunes.ui;
 
-import com.notenoughrunes.types.NERData;
+import com.notenoughrunes.db.H2DataProvider;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -50,11 +50,11 @@ class NERItemPanel extends JPanel
 	public NERItem item;
 
 
-	NERItemPanel(NERItem item, ItemManager itemManager, NERData nerData, ClientThread clientThread, NERPanel mainPanel)
+	NERItemPanel(NERItem item, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel)
 	{
 		this.item = item;
-		this.sourcesPanel = new NERSourcesPanel(item, itemManager, nerData, clientThread, mainPanel);
-		this.usesPanel = new NERUsesPanel(item, itemManager, nerData, clientThread, mainPanel);
+		this.sourcesPanel = new NERSourcesPanel(item, itemManager, dataProvider, clientThread, mainPanel);
+		this.usesPanel = new NERUsesPanel(item, itemManager, dataProvider, clientThread, mainPanel);
 
 		log.debug("Creating item panel: " + item.getInfoItem().getName());
 

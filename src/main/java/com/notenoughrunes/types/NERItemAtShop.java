@@ -6,13 +6,19 @@ import lombok.RequiredArgsConstructor;
 
 @Data
 @RequiredArgsConstructor
-public class NERProductionMaterial
+public class NERItemAtShop
 {
 	private final String name;
 
 	@Nullable
 	private final String version;
 
+	private final String currency;
+	private final String stock;
+
 	@Nullable
-	private final String quantity;
+	private final String buyPrice;
+
+	@Nullable
+	private final String sellPrice;
 }

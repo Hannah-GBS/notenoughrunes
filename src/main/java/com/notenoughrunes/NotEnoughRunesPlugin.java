@@ -2,19 +2,18 @@ package com.notenoughrunes;
 
 import com.google.gson.Gson;
 import com.google.inject.Provides;
-import com.notenoughrunes.types.DataFetcher;
-import com.notenoughrunes.types.NERData;
+import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.ui.NERPanel;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import javax.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
-import net.runelite.api.events.GameStateChanged;
+import net.runelite.client.RuneLite;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -29,6 +28,9 @@ import net.runelite.client.util.ImageUtil;
 )
 public class NotEnoughRunesPlugin extends Plugin
 {
+
+	public static final File NER_DATA_DIR = new File(RuneLite.RUNELITE_DIR, "not-enough-runes");
+
 	@Inject
 	private Client client;
 
@@ -41,8 +43,8 @@ public class NotEnoughRunesPlugin extends Plugin
 	@Inject
 	private Gson gson;
 
-	@Getter
-	private NERData nerData;
+	@Inject
+	private H2DataProvider dataProvider;
 
 	@Getter(AccessLevel.PACKAGE)
 	private NavigationButton navButton;
@@ -54,6 +56,12 @@ public class NotEnoughRunesPlugin extends Plugin
 	@Override
 	protected void startUp() throws Exception
 	{
+		if (!NER_DATA_DIR.exists())
+		{
+			NER_DATA_DIR.mkdirs();
+			dataProvider.init(); // async
+		}
+
 		nerPanel = injector.getInstance(NERPanel.class);
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");
 
@@ -65,8 +73,6 @@ public class NotEnoughRunesPlugin extends Plugin
 			.build();
 
 		clientToolbar.addNavigation(navButton);
-
-		nerData = new NERData(new DataFetcher());
 	}
 
 	@Override
