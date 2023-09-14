@@ -1,6 +1,6 @@
 package com.notenoughrunes.types;
 
-import java.util.Set;
+import java.util.List;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -9,5 +9,5 @@ import lombok.RequiredArgsConstructor;
 public class NERSpawnGroup
 {
 	private final String group;
-	private final Set<NERSpawnItem> spawns;
+	private final List<NERSpawnItem> spawns;
 }

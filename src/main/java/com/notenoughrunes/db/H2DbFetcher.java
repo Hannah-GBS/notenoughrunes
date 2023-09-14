@@ -22,7 +22,7 @@ import okhttp3.Response;
 public class H2DbFetcher
 {
 
-	private static final String dbFileName = "data.h2.mv.db";
+	private static final String dbFileName = "data.h2";
 	private static final String remoteUrl = "https://raw.githubusercontent.com/Hannah-GBS/runelite-wiki-scraper/wiki-data/output/" + dbFileName;
 	public static final File dbFile = new File(NotEnoughRunesPlugin.NER_DATA_DIR, dbFileName);
 

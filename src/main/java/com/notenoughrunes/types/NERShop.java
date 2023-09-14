@@ -1,6 +1,6 @@
 package com.notenoughrunes.types;
 
-import java.util.Set;
+import java.util.List;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -12,5 +12,5 @@ public class NERShop
 	private final String sellMultiplier;
 	private final String location;
 	private final boolean isMembers;
-	private final Set<NERShopItem> items;
+	private final List<NERShopItem> items;
 }

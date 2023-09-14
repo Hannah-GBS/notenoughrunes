@@ -4,10 +4,13 @@ import com.google.common.base.Strings;
 import com.notenoughrunes.NotEnoughRunesConfig;
 import com.notenoughrunes.NotEnoughRunesPlugin;
 import com.notenoughrunes.db.H2DataProvider;
+import com.notenoughrunes.db.queries.SearchItemsQuery;
+import com.notenoughrunes.db.queries.WideSearchItemsQuery;
 import com.notenoughrunes.types.NERInfoItem;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
@@ -22,6 +25,7 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
+import net.runelite.client.util.AsyncBufferedImage;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
 @Slf4j
@@ -124,16 +128,13 @@ public class NERPanel extends PluginPanel
 		updateUI();
 	}
 
-	public static int getItemId(String itemName, String version)
+	public NERInfoItem getItemByNameAndVersion(String itemName, String version)
 	{
-		Set<NERInfoItem> matchedItems = nerData.getItemInfoData().stream()
-			.filter(item -> item.getName().contains(itemName) || itemName.contains(item.getName()))
-			.collect(Collectors.toSet());
+		List<NERInfoItem> matchedItems = dataProvider.executeMany(new WideSearchItemsQuery(itemName));
 
 		return matchedItems.stream()
 			.min(compareNameAndGroup(itemName, version))
-			.orElse(new NERInfoItem("null item", "", "", "", "", 0, false, false))
-			.getItemID();
+			.orElse(new NERInfoItem(0, "", "", "", "", "", false, false));
 	}
 
 	private static Comparator<NERInfoItem> compareNameAndGroup(String itemName, String version)

@@ -1,7 +1,7 @@
 package com.notenoughrunes.ui;
 
 import com.notenoughrunes.NotEnoughRunesPlugin;
-import com.notenoughrunes.types.NERData;
+import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.types.NERProductionRecipe;
 import com.notenoughrunes.types.NERShop;
 import java.awt.BorderLayout;
@@ -47,7 +47,7 @@ class NERUsesPanel extends JPanel
 	static final ImageIcon BACK_ICON_HOVER;
 
 	private final NERItem nerItem;
-	private final NERData nerData;
+	private final H2DataProvider dataProvider;
 	private final ItemManager itemManager;
 	private final ClientThread clientThread;
 	private final String useName;
@@ -78,10 +78,10 @@ class NERUsesPanel extends JPanel
 		SECTION_RETRACT_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(sectionExpandIcon, -100));
 	}
 
-	NERUsesPanel(NERItem nerItem, ItemManager itemManager, NERData nerData, ClientThread clientThread, NERPanel mainPanel)
+	NERUsesPanel(NERItem nerItem, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel)
 	{
 		this.nerItem = nerItem;
-		this.nerData = nerData;
+		this.dataProvider = dataProvider;
 		this.itemManager = itemManager;
 		this.clientThread = clientThread;
 		this.mainPanel = mainPanel;
@@ -121,31 +121,31 @@ class NERUsesPanel extends JPanel
 		switch (sectionType)
 		{
 			case RECIPES:
-				Set<NERProductionRecipe> recipes = nerData.getItemProductionData().stream()
-					.filter(itemRecipe -> itemRecipe.getMaterials().stream()
-						.anyMatch(material -> material.getName().equals(useName) && (material.getVersion() == null || material.getVersion().equals(nerItem.getInfoItem().getVersion()))))
-						.collect(Collectors.toSet());
-
-				recipes.forEach((recipe) ->
-				{
-					NERRecipePanel panel = new NERRecipePanel(recipe, itemManager, nerData, clientThread, mainPanel, useName);
-					sectionItems.add(panel);
-				});
+//				Set<NERProductionRecipe> recipes = nerData.getItemProductionData().stream()
+//					.filter(itemRecipe -> itemRecipe.getMaterials().stream()
+//						.anyMatch(material -> material.getName().equals(useName) && (material.getVersion() == null || material.getVersion().equals(nerItem.getInfoItem().getVersion()))))
+//						.collect(Collectors.toSet());
+//
+//				recipes.forEach((recipe) ->
+//				{
+//					NERRecipePanel panel = new NERRecipePanel(recipe, itemManager, nerData, clientThread, mainPanel, useName);
+//					sectionItems.add(panel);
+//				});
 				break;
 
 			case SHOPS:
-				Set<NERShop> shops = nerData.getItemShopData().stream()
-					.filter(shop -> shop.getItems().stream()
-						.anyMatch(item -> item.getCurrency().equals(useName)))
-					.collect(Collectors.toSet());
-
-				if (shops.size() < 1)
-				{
-					break;
-				}
-
-				NERShopsPanel panel = new NERShopsPanel(shops, nerItem, itemManager, clientThread, true);
-				sectionItems.add(panel);
+//				Set<NERShop> shops = nerData.getItemShopData().stream()
+//					.filter(shop -> shop.getItems().stream()
+//						.anyMatch(item -> item.getCurrency().equals(useName)))
+//					.collect(Collectors.toSet());
+//
+//				if (shops.size() < 1)
+//				{
+//					break;
+//				}
+//
+//				NERShopsPanel panel = new NERShopsPanel(shops, nerItem, itemManager, clientThread, true);
+//				sectionItems.add(panel);
 
 				break;
 		}

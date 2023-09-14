@@ -13,6 +13,7 @@ import static java.awt.GridBagConstraints.LINE_START;
 import static java.awt.GridBagConstraints.NONE;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
@@ -35,7 +36,7 @@ public class NERShopsPanel extends JPanel
 	private final ClientThread clientThread;
 
 
-	public NERShopsPanel(Set<NERShop> shops, NERItem nerItem, ItemManager itemManager, ClientThread clientThread, boolean isCurrency)
+	public NERShopsPanel(List<NERShop> shops, NERItem nerItem, ItemManager itemManager, ClientThread clientThread, boolean isCurrency)
 	{
 		this.nerItem = nerItem;
 		this.itemManager = itemManager;
@@ -98,12 +99,12 @@ public class NERShopsPanel extends JPanel
 				int finalRow = row;
 				clientThread.invokeLater(() ->
 				{
-					String sellPrice;
+					String sellPrice = null;
 					if (shop.getSellMultiplier() != null)
 					{
 						if (isCurrency) {
-							sellPrice = String.valueOf(itemManager.getItemComposition(
-								itemManager.canonicalize(NERPanel.getItemId(shopItem.getName(), shopItem.getVersion()))).getPrice() * (Integer.parseInt(shop.getSellMultiplier()) / 1000));
+//							sellPrice = String.valueOf(itemManager.getItemComposition(
+//								itemManager.canonicalize(NERPanel.getItemId(shopItem.getName(), shopItem.getVersion()))).getPrice() * (Integer.parseInt(shop.getSellMultiplier()) / 1000));
 						}
 						else
 						{
