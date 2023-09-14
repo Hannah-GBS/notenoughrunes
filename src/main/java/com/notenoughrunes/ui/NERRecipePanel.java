@@ -169,16 +169,17 @@ public class NERRecipePanel extends JPanel
 			JPanel materialRow = new JPanel(new GridBagLayout());
 			materialRow.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 			JLabel materialLabel = new JLabel();
-			setItemImage(materialLabel, material.getItem().getItemID());
-			materialLabel.setText(material.getItem().getName());
-			materialLabel.setToolTipText(material.getItem().getName());
+			NERInfoItem infoItem = mainPanel.getItemByNameAndVersion(material.getName(), material.getVersion());
+			setItemImage(materialLabel, infoItem.getItemID());
+			materialLabel.setText(material.getName());
+			materialLabel.setToolTipText(material.getName());
 			materialLabel.setMaximumSize(new Dimension(0, 30));
 			materialLabel.setPreferredSize(new Dimension(0, 30));
 			materialRow.add(materialLabel, new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, LINE_START, BOTH, NO_INSETS, 4, 4));
 
 			materialRow.add(new JLabel("x" + material.getQuantity()), new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, EAST, NONE, new Insets(0, 8, 0, 0), 4, 4));
 
-			addMouseAdapter(materialLabel, material.getItem(), useName);
+			addMouseAdapter(materialLabel, infoItem, useName);
 
 			add(materialRow, new GridBagConstraints(0, row++, 4, 1, 0.0, 0.0, CENTER, BOTH, NO_INSETS, 4, 4));
 		}
@@ -187,22 +188,23 @@ public class NERRecipePanel extends JPanel
 
 		add(new JLabel("Output"), new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
 		JLabel outputLabel = new JLabel();
-		setItemImage(outputLabel, recipe.getOutput().getItem().getItemID());
-		outputLabel.setText(recipe.getOutput().getItem().getName());
-		outputLabel.setToolTipText(recipe.getOutput().getItem().getName());
+		NERInfoItem outputItem = mainPanel.getItemByNameAndVersion(recipe.getOutputItemName(), recipe.getOutputItemVersion());
+		setItemImage(outputLabel, outputItem.getItemID());
+		outputLabel.setText(recipe.getOutputItemName());
+		outputLabel.setToolTipText(recipe.getOutputItemName());
 		outputLabel.setMaximumSize(new Dimension(0, 20));
 		outputLabel.setPreferredSize(new Dimension(0, 20));
 
 		add(outputLabel, new GridBagConstraints(0, row, 3, 1, 1.0, 0.0, LINE_START, BOTH, NO_INSETS, 4, 4));
 
-		addMouseAdapter(outputLabel, recipe.getOutput().getItem(), useName);
+		addMouseAdapter(outputLabel, outputItem, useName);
 
-		JLabel quantityLabel = new JLabel("x" + recipe.getOutput().getQuantity());
+		JLabel quantityLabel = new JLabel("x" + recipe.getOutputQuantity());
 		add(quantityLabel, new GridBagConstraints(3, row, 1, 1, 0.0, 0.0, LINE_END, NONE, new Insets(0, 4, 0, 0), 4, 4));
-		if (recipe.getOutput().getQuantityNote() != null)
+		if (recipe.getOutputQuantityNote() != null)
 		{
 			quantityLabel.setText("<html><body style=\"border-bottom: 1px dotted #ffffff\">" + quantityLabel.getText() + "*");
-			String tooltipText = recipe.getOutput().getQuantityNote().replaceAll("[\\[\\]]|<[^>]*>", "");
+			String tooltipText = recipe.getOutputQuantityNote().replaceAll("[\\[\\]]|<[^>]*>", "");
 			quantityLabel.setToolTipText(String.format("<html><p width=\"%d\">%s</p></html>", 200, tooltipText));
 		}
 	}
@@ -249,6 +251,7 @@ public class NERRecipePanel extends JPanel
 	private void addMouseAdapter(JLabel materialLabel, NERInfoItem itemInfo, String useName)
 	{
 		NERItem materialNERItem = getNERItem(itemInfo);
+		if (useName.equals(itemInfo.getName())) return;
 
 		materialLabel.addMouseListener(new MouseAdapter()
 		{

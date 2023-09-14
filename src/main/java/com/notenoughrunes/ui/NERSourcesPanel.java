@@ -4,10 +4,13 @@ import com.notenoughrunes.NotEnoughRunesPlugin;
 import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.db.queries.ItemDropSourcesQuery;
 import com.notenoughrunes.db.queries.ItemProducedByQuery;
+import com.notenoughrunes.db.queries.ItemSoldAtQuery;
+import com.notenoughrunes.db.queries.ItemSpawnQuery;
 import com.notenoughrunes.types.NERDropItem;
 import com.notenoughrunes.types.NERDropSource;
 import com.notenoughrunes.types.NERProductionRecipe;
 import com.notenoughrunes.types.NERShop;
+import com.notenoughrunes.types.NERSpawnGroup;
 import com.notenoughrunes.types.NERSpawnItem;
 import static com.notenoughrunes.ui.NERPanel.MAX_ENTRIES;
 import java.awt.BorderLayout;
@@ -144,8 +147,7 @@ class NERSourcesPanel extends JPanel
 				dataProvider.executeMany(new ItemProducedByQuery(useName, nerItem.getInfoItem().getVersion()))
 					.forEach((recipe) ->
 				{
-					NERRecipePanel panel = new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName);
-					sectionItems.add(panel);
+					sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName));
 				});
 				break;
 
@@ -157,30 +159,26 @@ class NERSourcesPanel extends JPanel
 				break;
 
 			case SHOPS:
-				Set<NERShop> shops = dataProvider.getItemShopData().stream()
-					.filter(shop -> shop.getItems().stream()
-						.anyMatch(item -> item.getName().equals(useName) && (item.getVersion() == null || nerItem.getInfoItem().getVersion() == null || item.getVersion().equals(nerItem.getInfoItem().getVersion()))))
-					.collect(Collectors.toSet());
-
-				if (shops.size() < 1)
-				{
-					break;
+				List<NERShop> shops = dataProvider.executeMany(new ItemSoldAtQuery(useName, nerItem.getInfoItem().getVersion()));
+				if (!shops.isEmpty()) {
+					sectionItems.add(new NERShopsPanel(shops, nerItem, itemManager, clientThread, false));
 				}
-
-				NERShopsPanel panel = new NERShopsPanel(shops, nerItem, itemManager, clientThread, false);
-				sectionItems.add(panel);
-
 				break;
 
 			case SPAWNS:
-				dataProvider.getItemSpawnData().stream()
-					.flatMap(spawnGroup -> spawnGroup.getSpawns().stream()
-						.filter(spawnItem -> spawnItem.getName().equals(useName)))
-					.distinct()
-					.sorted(Comparator.comparing(NERSpawnItem::getLocation))
-					.limit(MAX_ENTRIES)
-					.map(NERSpawnPanel::new)
-					.forEachOrdered(sectionItems::add);
+				dataProvider.executeMany(new ItemSpawnQuery(nerItem.getInfoItem().getName(), nerItem.getInfoItem().getGroup()))
+					.forEach((spawnItem) ->
+				{
+					sectionItems.add(new NERSpawnPanel(spawnItem));
+				});
+//				dataProvider.getItemSpawnData().stream()
+//					.flatMap(spawnGroup -> spawnGroup.getSpawns().stream()
+//						.filter(spawnItem -> spawnItem.getName().equals(useName)))
+//					.distinct()
+//					.sorted(Comparator.comparing(NERSpawnItem::getLocation))
+//					.limit(MAX_ENTRIES)
+//					.map(NERSpawnPanel::new)
+//					.forEachOrdered(sectionItems::add);
 				break;
 		}
 

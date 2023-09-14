@@ -60,7 +60,10 @@ public class NotEnoughRunesPlugin extends Plugin
 		{
 			NER_DATA_DIR.mkdirs();
 			dataProvider.init(); // async
+		} else {
+			dataProvider.init(); // async
 		}
+
 
 		nerPanel = injector.getInstance(NERPanel.class);
 		final BufferedImage icon = ImageUtil.loadImageResource(getClass(), "icon.png");

@@ -24,8 +24,8 @@ public class ItemProducedByQuery extends ModeledQuery<NERProductionRecipe>
 			"FROM PRODUCTION_RECIPES PR " +
 			"LEFT JOIN PRODUCTION_MATERIALS PM on PR.ID = PM.RECIPE_ID " +
 			"LEFT JOIN PRODUCTION_SKILLS PS on PR.ID = PS.RECIPE_ID " +
-			"WHERE PR.OUTPUT_ITEM_NAME = ? " +
-			"	AND (PR.OUTPUT_ITEM_VERSION IS NULL OR ? IS NULL OR PR.OUTPUT_ITEM_VERSION = ?) " +
+			"WHERE LOWER(PR.OUTPUT_ITEM_NAME) = LOWER(?) " +
+			"	AND (PR.OUTPUT_ITEM_VERSION IS NULL OR ? IS NULL OR LOWER(PR.OUTPUT_ITEM_VERSION) = LOWER(?)) " +
 			"ORDER BY PR.ID " +
 			"LIMIT 100";
 	}
@@ -41,42 +41,50 @@ public class ItemProducedByQuery extends ModeledQuery<NERProductionRecipe>
 	@Override
 	public NERProductionRecipe convertRow(ResultSet rs) throws SQLException
 	{
-		int id = rs.getInt("PR.ID");
+		int id = rs.getInt("PRODUCTION_RECIPES.ID");
 		NERProductionRecipe res = new NERProductionRecipe(
-			rs.getString("PR.TICKS"),
+			rs.getString("PRODUCTION_RECIPES.TICKS"),
 			new ArrayList<>(),
-			rs.getString("PR.FACILITIES"),
-			rs.getString("PR.TOOLS"),
+			rs.getString("PRODUCTION_RECIPES.FACILITIES"),
+			rs.getString("PRODUCTION_RECIPES.TOOLS"),
 			new ArrayList<>(),
-			rs.getBoolean("PR.IS_MEMBERS"),
-			rs.getString("PR.OUTPUT_ITEM_NAME"),
-			rs.getString("PR.OUTPUT_ITEM_VERSION"),
-			rs.getString("PR.OUTPUT_QUANTITY"),
-			rs.getString("PR.OUTPUT_QUANTITY_NOTE"),
-			rs.getString("PR.OUTPUT_SUBTEXT")
+			rs.getBoolean("PRODUCTION_RECIPES.IS_MEMBERS"),
+			rs.getString("PRODUCTION_RECIPES.OUTPUT_ITEM_NAME"),
+			rs.getString("PRODUCTION_RECIPES.OUTPUT_ITEM_VERSION"),
+			rs.getString("PRODUCTION_RECIPES.OUTPUT_QUANTITY"),
+			rs.getString("PRODUCTION_RECIPES.OUTPUT_QUANTITY_NOTE"),
+			rs.getString("PRODUCTION_RECIPES.OUTPUT_SUBTEXT")
 		);
 
 		do
 		{
-			if (rs.getInt("PM.ID") != 0)
+			if (rs.getInt("PRODUCTION_MATERIALS.ID") != 0)
 			{
-				res.getMaterials().add(new NERProductionMaterial(
-					rs.getString("PM.ITEM_NAME"),
-					rs.getString("PM.ITEM_VERSION"),
-					rs.getString("PM.QUANTITY")
-				));
+				NERProductionMaterial material = new NERProductionMaterial(
+					rs.getString("PRODUCTION_MATERIALS.ITEM_NAME"),
+					rs.getString("PRODUCTION_MATERIALS.ITEM_VERSION"),
+					rs.getString("PRODUCTION_MATERIALS.QUANTITY")
+				);
+
+				if (!res.getMaterials().contains(material)) {
+					res.getMaterials().add(material);
+				}
 			}
 
-			if (rs.getInt("PS.ID") != 0)
+			if (rs.getInt("PRODUCTION_SKILLS.ID") != 0)
 			{
-				res.getSkills().add(new NERProductionSkill(
-					rs.getString("PS.NAME"),
-					rs.getString("PS.LEVEL"),
-					rs.getString("PS.EXPERIENCE"),
-					rs.getBoolean("PS.IS_BOOSTABLE")
-				));
+				NERProductionSkill skill = new NERProductionSkill(
+					rs.getString("PRODUCTION_SKILLS.NAME"),
+					rs.getString("PRODUCTION_SKILLS.LEVEL"),
+					rs.getString("PRODUCTION_SKILLS.EXPERIENCE"),
+					rs.getBoolean("PRODUCTION_SKILLS.IS_BOOSTABLE")
+				);
+
+				if (!res.getSkills().contains(skill)) {
+					res.getSkills().add(skill);
+				}
 			}
-		} while (rs.next() && rs.getInt("PR.ID") == id);
+		} while (rs.next() && rs.getInt("PRODUCTION_RECIPES.ID") == id);
 
 		// caller will call next() immediately after this, so prevent skipping a row
 		rs.previous();

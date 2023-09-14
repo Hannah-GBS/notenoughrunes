@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NERSpawnItem
 {
+	private final String group;
 	private final String name;
 	private final String coords;
 	private final String location;
