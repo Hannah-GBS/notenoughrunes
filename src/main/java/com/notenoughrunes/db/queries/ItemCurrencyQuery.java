@@ -9,11 +9,10 @@ import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class ItemSoldAtQuery extends ModeledQuery<NERShop>
+public class ItemCurrencyQuery extends ModeledQuery<NERShop>
 {
 	
 	private final String name;
-	private final String version;
 
 	@Override
 	public String getSql()
@@ -24,19 +23,15 @@ public class ItemSoldAtQuery extends ModeledQuery<NERShop>
 //			"WHERE EXISTS (" +
 //			"	SELECT 1 FROM SHOP_ITEMS SI " +
 //			"	WHERE S.ID = SI.SHOP_ID " +
-//			"		AND SI.ITEM_NAME = ?" +
-//			"		AND (SI.ITEM_VERSION IS NULL OR ? IS NULL OR SI.ITEM_VERSION = ?))";
+//			"		AND SI.CURRENCY = ?)";
 			// don't *need* all shop items, just matching ones
-			"WHERE SI.ITEM_NAME = ?" +
-			"	AND (SI.ITEM_VERSION IS NULL OR ? IS NULL OR SI.ITEM_VERSION = ?)";
+			"WHERE SI.CURRENCY = ?";
 	}
 
 	@Override
 	public void setParams(PreparedStatement ps) throws SQLException
 	{
 		ps.setString(1, name);
-		ps.setString(2, version);
-		ps.setString(3, version);
 	}
 
 	@Override
