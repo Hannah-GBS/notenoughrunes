@@ -116,7 +116,7 @@ public class H2DataProvider implements AutoCloseable
 			throw new IllegalStateException("Cannot createStatement on a closed connection");
 		}
 
-		return db.prepareStatement(sql);
+		return db.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 	}
 
 }

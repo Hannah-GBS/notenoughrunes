@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class ItemProducedByQuery extends ModeledQuery<NERProductionRecipe>
+public class ItemProducesQuery extends ModeledQuery<NERProductionRecipe>
 {
 
 	private final String name;
@@ -24,9 +24,11 @@ public class ItemProducedByQuery extends ModeledQuery<NERProductionRecipe>
 			"FROM PRODUCTION_RECIPES PR " +
 			"LEFT JOIN PRODUCTION_MATERIALS PM ON PR.ID = PM.RECIPE_ID " +
 			"LEFT JOIN PRODUCTION_SKILLS PS ON PR.ID = PS.RECIPE_ID " +
-			"WHERE LOWER(PR.OUTPUT_ITEM_NAME) = LOWER(?) " +
-			"	AND (PR.OUTPUT_ITEM_VERSION IS NULL OR ? IS NULL OR LOWER(PR.OUTPUT_ITEM_VERSION) = LOWER(?)) " +
-			"ORDER BY PR.ID " +
+			"WHERE EXISTS (" +
+			"	SELECT 1 FROM PRODUCTION_MATERIALS PM " +
+			"	WHERE PR.ID = PM.RECIPE_ID" +
+			"	AND LOWER(PM.ITEM_NAME) = LOWER(?) " +
+			"	AND (PM.ITEM_VERSION IS NULL OR ? IS NULL OR LOWER(PM.ITEM_VERSION) = LOWER(?))) " +
 			"LIMIT 100";
 	}
 

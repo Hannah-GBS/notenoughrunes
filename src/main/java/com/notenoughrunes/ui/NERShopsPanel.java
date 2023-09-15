@@ -31,16 +31,9 @@ public class NERShopsPanel extends JPanel
 {
 
 	private static final Insets NO_INSETS = new Insets(0, 0, 0, 0);
-	private final NERItem nerItem;
-	private final ItemManager itemManager;
-	private final ClientThread clientThread;
 
-
-	public NERShopsPanel(List<NERShop> shops, NERItem nerItem, ItemManager itemManager, ClientThread clientThread, boolean isCurrency)
+	public NERShopsPanel(List<NERShop> shops, NERItem nerItem, ItemManager itemManager, ClientThread clientThread, boolean isCurrency, NERPanel mainPanel)
 	{
-		this.nerItem = nerItem;
-		this.itemManager = itemManager;
-		this.clientThread = clientThread;
 
 		String useName = nerItem.getInfoItem().getName().length() > nerItem.getInfoItem().getGroup().length()
 			? nerItem.getInfoItem().getName()
@@ -99,17 +92,22 @@ public class NERShopsPanel extends JPanel
 				int finalRow = row;
 				clientThread.invokeLater(() ->
 				{
-					String sellPrice = null;
+					String sellPrice;
 					if (shop.getSellMultiplier() != null)
 					{
 						if (isCurrency) {
-//							sellPrice = String.valueOf(itemManager.getItemComposition(
-//								itemManager.canonicalize(NERPanel.getItemId(shopItem.getName(), shopItem.getVersion()))).getPrice() * (Integer.parseInt(shop.getSellMultiplier()) / 1000));
+							sellPrice = String.valueOf(itemManager.getItemComposition(
+								itemManager.canonicalize(
+									mainPanel.getItemByNameAndVersion(shopItem.getName(), shopItem.getVersion())
+									.getItemID()))
+								.getPrice() * (Integer.parseInt(shop.getSellMultiplier()) / 1000));
 						}
 						else
 						{
 							sellPrice = String.valueOf(itemManager.getItemComposition(
-								itemManager.canonicalize(nerItem.getInfoItem().getItemID())).getPrice() * (Integer.parseInt(shop.getSellMultiplier()) / 1000));
+								itemManager.canonicalize(
+									nerItem.getInfoItem().getItemID()))
+								.getPrice() * (Integer.parseInt(shop.getSellMultiplier()) / 1000));
 						}
 					}
 					else

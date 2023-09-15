@@ -8,11 +8,7 @@ import com.notenoughrunes.db.queries.ItemSoldAtQuery;
 import com.notenoughrunes.db.queries.ItemSpawnQuery;
 import com.notenoughrunes.types.NERDropItem;
 import com.notenoughrunes.types.NERDropSource;
-import com.notenoughrunes.types.NERProductionRecipe;
 import com.notenoughrunes.types.NERShop;
-import com.notenoughrunes.types.NERSpawnGroup;
-import com.notenoughrunes.types.NERSpawnItem;
-import static com.notenoughrunes.ui.NERPanel.MAX_ENTRIES;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -22,10 +18,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -146,9 +139,7 @@ class NERSourcesPanel extends JPanel
 			case RECIPES:
 				dataProvider.executeMany(new ItemProducedByQuery(useName, nerItem.getInfoItem().getVersion()))
 					.forEach((recipe) ->
-				{
-					sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName));
-				});
+						sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName)));
 				break;
 
 			case DROPS:
@@ -161,24 +152,16 @@ class NERSourcesPanel extends JPanel
 			case SHOPS:
 				List<NERShop> shops = dataProvider.executeMany(new ItemSoldAtQuery(useName, nerItem.getInfoItem().getVersion()));
 				if (!shops.isEmpty()) {
-					sectionItems.add(new NERShopsPanel(shops, nerItem, itemManager, clientThread, false));
+					sectionItems.add(new NERShopsPanel(shops, nerItem, itemManager, clientThread, false, mainPanel));
 				}
 				break;
 
 			case SPAWNS:
 				dataProvider.executeMany(new ItemSpawnQuery(nerItem.getInfoItem().getName(), nerItem.getInfoItem().getGroup()))
 					.forEach((spawnItem) ->
-				{
-					sectionItems.add(new NERSpawnPanel(spawnItem));
-				});
-//				dataProvider.getItemSpawnData().stream()
-//					.flatMap(spawnGroup -> spawnGroup.getSpawns().stream()
-//						.filter(spawnItem -> spawnItem.getName().equals(useName)))
-//					.distinct()
-//					.sorted(Comparator.comparing(NERSpawnItem::getLocation))
+						sectionItems.add(new NERSpawnPanel(spawnItem)));
 //					.limit(MAX_ENTRIES)
-//					.map(NERSpawnPanel::new)
-//					.forEachOrdered(sectionItems::add);
+
 				break;
 		}
 

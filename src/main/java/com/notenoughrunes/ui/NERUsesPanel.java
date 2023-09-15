@@ -2,6 +2,8 @@ package com.notenoughrunes.ui;
 
 import com.notenoughrunes.NotEnoughRunesPlugin;
 import com.notenoughrunes.db.H2DataProvider;
+import com.notenoughrunes.db.queries.ItemCurrencyQuery;
+import com.notenoughrunes.db.queries.ItemProducesQuery;
 import com.notenoughrunes.types.NERProductionRecipe;
 import com.notenoughrunes.types.NERShop;
 import java.awt.BorderLayout;
@@ -13,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
@@ -121,32 +124,16 @@ class NERUsesPanel extends JPanel
 		switch (sectionType)
 		{
 			case RECIPES:
-//				Set<NERProductionRecipe> recipes = nerData.getItemProductionData().stream()
-//					.filter(itemRecipe -> itemRecipe.getMaterials().stream()
-//						.anyMatch(material -> material.getName().equals(useName) && (material.getVersion() == null || material.getVersion().equals(nerItem.getInfoItem().getVersion()))))
-//						.collect(Collectors.toSet());
-//
-//				recipes.forEach((recipe) ->
-//				{
-//					NERRecipePanel panel = new NERRecipePanel(recipe, itemManager, nerData, clientThread, mainPanel, useName);
-//					sectionItems.add(panel);
-//				});
+				dataProvider.executeMany(new ItemProducesQuery(useName, nerItem.getInfoItem().getVersion()))
+					.forEach((recipe) ->
+						sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName)));
 				break;
 
 			case SHOPS:
-//				Set<NERShop> shops = nerData.getItemShopData().stream()
-//					.filter(shop -> shop.getItems().stream()
-//						.anyMatch(item -> item.getCurrency().equals(useName)))
-//					.collect(Collectors.toSet());
-//
-//				if (shops.size() < 1)
-//				{
-//					break;
-//				}
-//
-//				NERShopsPanel panel = new NERShopsPanel(shops, nerItem, itemManager, clientThread, true);
-//				sectionItems.add(panel);
-
+				List<NERShop> shops = dataProvider.executeMany(new ItemCurrencyQuery(useName));
+				if (!shops.isEmpty()) {
+					sectionItems.add(new NERShopsPanel(shops, nerItem, itemManager, clientThread, true, mainPanel));
+				}
 				break;
 		}
 
