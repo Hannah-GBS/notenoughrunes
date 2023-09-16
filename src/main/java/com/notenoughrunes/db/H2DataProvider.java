@@ -36,7 +36,7 @@ public class H2DataProvider implements AutoCloseable
 				String dbPath = H2DbFetcher.dbFile.getAbsolutePath();
 				log.debug("Creating db connection to {}", dbPath);
 				db = DriverManager.getConnection(buildConnectionString(
-					dbPath,
+					dbPath.replace(H2DbFetcher.dbFileExt, ""),
 					"TRACE_LEVEL_SYSTEM_OUT=1", // ERROR
 					"TRACE_LEVEL_FILE=0", // OFF
 					"ACCESS_MODE_DATA=r", // readonly

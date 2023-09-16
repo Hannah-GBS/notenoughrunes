@@ -124,9 +124,9 @@ class NERUsesPanel extends JPanel
 		switch (sectionType)
 		{
 			case RECIPES:
-				dataProvider.executeMany(new ItemProducesQuery(useName, nerItem.getInfoItem().getVersion()))
+				dataProvider.executeMany(new ItemProducesQuery(nerItem.getInfoItem().getItemID()))
 					.forEach((recipe) ->
-						sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName)));
+						sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName, dataProvider)));
 				break;
 
 			case SHOPS:

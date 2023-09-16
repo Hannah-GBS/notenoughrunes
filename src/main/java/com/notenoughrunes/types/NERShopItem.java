@@ -13,6 +13,7 @@ public class NERShopItem
 	@Nullable
 	private final String version;
 
+	private final int itemID;
 	private final String currency;
 	private final String stock;
 

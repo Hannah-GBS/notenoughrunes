@@ -18,14 +18,14 @@ public class SearchItemsQuery extends ModeledQuery<NERInfoItem>
 		//language=SQL
 		return "SELECT * FROM ITEMS I " +
 			"LEFT JOIN ITEM_GROUPS IG on IG.ID = I.GROUP_ID " +
-			"WHERE LOWER(I.NAME) LIKE LOWER(?) " +
+			"WHERE I.SEARCH_NAME LIKE ? " +
 			"LIMIT 200";
 	}
 
 	@Override
 	public void setParams(PreparedStatement ps) throws SQLException
 	{
-		ps.setString(1, "%" + searchTerms + "%");
+		ps.setString(1, "%" + searchTerms.toLowerCase() + "%");
 	}
 
 	@Override

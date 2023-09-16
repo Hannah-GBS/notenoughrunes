@@ -12,8 +12,7 @@ import lombok.RequiredArgsConstructor;
 public class ItemSoldAtQuery extends ModeledQuery<NERShop>
 {
 	
-	private final String name;
-	private final String version;
+	private final int itemID;
 
 	@Override
 	public String getSql()
@@ -27,16 +26,13 @@ public class ItemSoldAtQuery extends ModeledQuery<NERShop>
 //			"		AND SI.ITEM_NAME = ?" +
 //			"		AND (SI.ITEM_VERSION IS NULL OR ? IS NULL OR SI.ITEM_VERSION = ?))";
 			// don't *need* all shop items, just matching ones
-			"WHERE SI.ITEM_NAME = ?" +
-			"	AND (SI.ITEM_VERSION IS NULL OR ? IS NULL OR SI.ITEM_VERSION = ?)";
+			"WHERE SI.ITEM_ID = ?";
 	}
 
 	@Override
 	public void setParams(PreparedStatement ps) throws SQLException
 	{
-		ps.setString(1, name);
-		ps.setString(2, version);
-		ps.setString(3, version);
+		ps.setInt(1, itemID);
 	}
 
 	@Override
@@ -58,6 +54,7 @@ public class ItemSoldAtQuery extends ModeledQuery<NERShop>
 				NERShopItem shopItem = new NERShopItem(
 					rs.getString("SHOP_ITEMS.ITEM_NAME"),
 					rs.getString("SHOP_ITEMS.ITEM_VERSION"),
+					rs.getInt("SHOP_ITEMS.ITEM_ID"),
 					rs.getString("SHOP_ITEMS.CURRENCY"),
 					rs.getString("SHOP_ITEMS.STOCK"),
 					rs.getString("SHOP_ITEMS.BUY_PRICE"),

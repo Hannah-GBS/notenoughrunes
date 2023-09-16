@@ -53,6 +53,7 @@ public class ItemCurrencyQuery extends ModeledQuery<NERShop>
 				NERShopItem shopItem = new NERShopItem(
 					rs.getString("SHOP_ITEMS.ITEM_NAME"),
 					rs.getString("SHOP_ITEMS.ITEM_VERSION"),
+					rs.getInt("SHOP_ITEMS.ITEM_ID"),
 					rs.getString("SHOP_ITEMS.CURRENCY"),
 					rs.getString("SHOP_ITEMS.STOCK"),
 					rs.getString("SHOP_ITEMS.BUY_PRICE"),

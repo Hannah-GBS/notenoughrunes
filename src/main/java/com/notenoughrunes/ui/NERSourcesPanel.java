@@ -137,9 +137,9 @@ class NERSourcesPanel extends JPanel
 		switch (sectionType)
 		{
 			case RECIPES:
-				dataProvider.executeMany(new ItemProducedByQuery(useName, nerItem.getInfoItem().getVersion()))
+				dataProvider.executeMany(new ItemProducedByQuery(nerItem.getInfoItem().getItemID()))
 					.forEach((recipe) ->
-						sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName)));
+						sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName, dataProvider)));
 				break;
 
 			case DROPS:
@@ -150,7 +150,7 @@ class NERSourcesPanel extends JPanel
 				break;
 
 			case SHOPS:
-				List<NERShop> shops = dataProvider.executeMany(new ItemSoldAtQuery(useName, nerItem.getInfoItem().getVersion()));
+				List<NERShop> shops = dataProvider.executeMany(new ItemSoldAtQuery(nerItem.getInfoItem().getItemID()));
 				if (!shops.isEmpty()) {
 					sectionItems.add(new NERShopsPanel(shops, nerItem, itemManager, clientThread, false, mainPanel));
 				}

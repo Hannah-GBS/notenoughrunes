@@ -13,8 +13,7 @@ import lombok.RequiredArgsConstructor;
 public class ItemProducesQuery extends ModeledQuery<NERProductionRecipe>
 {
 
-	private final String name;
-	private final String version;
+	private final int itemID;
 
 	@Override
 	public String getSql()
@@ -27,17 +26,14 @@ public class ItemProducesQuery extends ModeledQuery<NERProductionRecipe>
 			"WHERE EXISTS (" +
 			"	SELECT 1 FROM PRODUCTION_MATERIALS PM " +
 			"	WHERE PR.ID = PM.RECIPE_ID" +
-			"	AND LOWER(PM.ITEM_NAME) = LOWER(?) " +
-			"	AND (PM.ITEM_VERSION IS NULL OR ? IS NULL OR LOWER(PM.ITEM_VERSION) = LOWER(?))) " +
+			"	AND PM.ITEM_ID = ?) " +
 			"LIMIT 100";
 	}
 
 	@Override
 	public void setParams(PreparedStatement ps) throws SQLException
 	{
-		ps.setString(1, name);
-		ps.setString(2, version);
-		ps.setString(3, version);
+		ps.setInt(1, itemID);
 	}
 
 	@Override
@@ -53,6 +49,7 @@ public class ItemProducesQuery extends ModeledQuery<NERProductionRecipe>
 			rs.getBoolean("PRODUCTION_RECIPES.IS_MEMBERS"),
 			rs.getString("PRODUCTION_RECIPES.OUTPUT_ITEM_NAME"),
 			rs.getString("PRODUCTION_RECIPES.OUTPUT_ITEM_VERSION"),
+			rs.getInt("PRODUCTION_RECIPES.OUTPUT_ITEM_ID"),
 			rs.getString("PRODUCTION_RECIPES.OUTPUT_QUANTITY"),
 			rs.getString("PRODUCTION_RECIPES.OUTPUT_QUANTITY_NOTE"),
 			rs.getString("PRODUCTION_RECIPES.OUTPUT_SUBTEXT")
@@ -65,6 +62,7 @@ public class ItemProducesQuery extends ModeledQuery<NERProductionRecipe>
 				NERProductionMaterial material = new NERProductionMaterial(
 					rs.getString("PRODUCTION_MATERIALS.ITEM_NAME"),
 					rs.getString("PRODUCTION_MATERIALS.ITEM_VERSION"),
+					rs.getInt("PRODUCTION_MATERIALS.ITEM_ID"),
 					rs.getString("PRODUCTION_MATERIALS.QUANTITY")
 				);
 

@@ -23,8 +23,9 @@ public class H2DbFetcher
 {
 
 	private static final String dbFileName = "data.h2";
-	private static final String remoteUrl = "https://raw.githubusercontent.com/Hannah-GBS/runelite-wiki-scraper/wiki-data/output/" + dbFileName;
-	public static final File dbFile = new File(NotEnoughRunesPlugin.NER_DATA_DIR, dbFileName);
+	public static final String dbFileExt = ".mv.db";
+	private static final String remoteUrl = "https://raw.githubusercontent.com/Hannah-GBS/runelite-wiki-scraper/wiki-data/output/" + dbFileName + dbFileExt;
+	public static final File dbFile = new File(NotEnoughRunesPlugin.NER_DATA_DIR, dbFileName + dbFileExt);
 
 	private final OkHttpClient httpClient;
 
