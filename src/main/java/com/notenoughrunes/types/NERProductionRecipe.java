@@ -27,6 +27,7 @@ public class NERProductionRecipe
 
 	private final String outputItemName;
 	private final String outputItemVersion;
+	private final int outputItemID;
 	private final String outputQuantity;
 	private final String outputQuantityNote;
 	private final String outputSubtext;

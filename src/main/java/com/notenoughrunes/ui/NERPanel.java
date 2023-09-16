@@ -1,19 +1,11 @@
 package com.notenoughrunes.ui;
 
 import com.google.common.base.Strings;
-import com.notenoughrunes.NotEnoughRunesConfig;
 import com.notenoughrunes.NotEnoughRunesPlugin;
 import com.notenoughrunes.db.H2DataProvider;
-import com.notenoughrunes.db.queries.SearchItemsQuery;
-import com.notenoughrunes.db.queries.WideSearchItemsQuery;
-import com.notenoughrunes.types.NERInfoItem;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -25,8 +17,6 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
-import net.runelite.client.util.AsyncBufferedImage;
-import org.apache.commons.text.similarity.LevenshteinDistance;
 
 @Slf4j
 public class NERPanel extends PluginPanel
@@ -121,27 +111,29 @@ public class NERPanel extends PluginPanel
 
 	void displayItem(NERItem item)
 	{
-		itemPanel = new NERItemPanel(item, itemManager, dataProvider, clientThread, this);
-		remove(currentPanel);
-		currentPanel = itemPanel;
-		add(itemPanel, BorderLayout.CENTER);
-		updateUI();
+		clientThread.invokeLater(() -> SwingUtilities.invokeLater(() -> {
+			itemPanel = new NERItemPanel(item, itemManager, dataProvider, clientThread, this);
+			remove(currentPanel);
+			currentPanel = itemPanel;
+			add(itemPanel, BorderLayout.CENTER);
+			updateUI();
+		}));
 	}
 
-	public NERInfoItem getItemByNameAndVersion(String itemName, String version)
-	{
-		List<NERInfoItem> matchedItems = dataProvider.executeMany(new WideSearchItemsQuery(itemName));
-
-		return matchedItems.stream()
-			.min(compareNameAndGroup(itemName, version))
-			.orElse(new NERInfoItem(0, "", "", "", "", "", false, false));
-	}
-
-	private static Comparator<NERInfoItem> compareNameAndGroup(String itemName, String version)
-	{
-		return Comparator.comparing((NERInfoItem item) -> new LevenshteinDistance().apply(item.getName(), itemName))
-			.thenComparing(item -> new LevenshteinDistance().apply(item.getGroup(), itemName))
-			.thenComparing(item -> new LevenshteinDistance().apply(item.getVersion() != null ? item.getVersion() : "", version != null ? version : ""));
-
-	}
+//	public NERInfoItem getItemByNameAndVersion(String itemName, String version)
+//	{
+//		List<NERInfoItem> matchedItems = dataProvider.executeMany(new WideSearchItemsQuery(itemName));
+//
+//		return matchedItems.stream()
+//			.min(compareNameAndGroup(itemName, version))
+//			.orElse(new NERInfoItem(0, "", "", "", "", "", false, false));
+//	}
+//
+//	private static Comparator<NERInfoItem> compareNameAndGroup(String itemName, String version)
+//	{
+//		return Comparator.comparing((NERInfoItem item) -> new LevenshteinDistance().apply(item.getName(), itemName))
+//			.thenComparing(item -> new LevenshteinDistance().apply(item.getGroup(), itemName))
+//			.thenComparing(item -> new LevenshteinDistance().apply(item.getVersion() != null ? item.getVersion() : "", version != null ? version : ""));
+//
+//	}
 }

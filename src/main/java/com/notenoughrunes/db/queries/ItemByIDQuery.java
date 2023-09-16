@@ -7,10 +7,10 @@ import java.sql.SQLException;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class WideSearchItemsQuery extends ModeledQuery<NERInfoItem>
+public class ItemByIDQuery extends ModeledQuery<NERInfoItem>
 {
 
-	private final String searchTerms;
+	private final int itemID;
 
 	@Override
 	public String getSql()
@@ -18,16 +18,14 @@ public class WideSearchItemsQuery extends ModeledQuery<NERInfoItem>
 		//language=SQL
 		return "SELECT * FROM ITEMS I " +
 			"LEFT JOIN ITEM_GROUPS IG on IG.ID = I.GROUP_ID " +
-			"WHERE LOWER(I.NAME) LIKE LOWER(?) " +
-			"OR LOWER(?) LIKE LOWER(CONCAT('%',I.NAME,'%'))" +
+			"WHERE I.ID = ? " +
 			"LIMIT 200";
 	}
 
 	@Override
 	public void setParams(PreparedStatement ps) throws SQLException
 	{
-		ps.setString(1, "%" + searchTerms + "%");
-		ps.setString(2, searchTerms);
+		ps.setInt(1, itemID);
 	}
 
 	@Override

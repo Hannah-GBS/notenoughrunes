@@ -98,8 +98,7 @@ public class NERShopsPanel extends JPanel
 						if (isCurrency) {
 							sellPrice = String.valueOf(itemManager.getItemComposition(
 								itemManager.canonicalize(
-									mainPanel.getItemByNameAndVersion(shopItem.getName(), shopItem.getVersion())
-									.getItemID()))
+									shopItem.getItemID()))
 								.getPrice() * (Integer.parseInt(shop.getSellMultiplier()) / 1000));
 						}
 						else
