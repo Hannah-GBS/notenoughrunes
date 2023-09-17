@@ -111,13 +111,11 @@ public class NERPanel extends PluginPanel
 
 	void displayItem(NERItem item)
 	{
-		clientThread.invokeLater(() -> SwingUtilities.invokeLater(() -> {
-			itemPanel = new NERItemPanel(item, itemManager, dataProvider, clientThread, this);
-			remove(currentPanel);
-			currentPanel = itemPanel;
-			add(itemPanel, BorderLayout.CENTER);
-			updateUI();
-		}));
+		itemPanel = new NERItemPanel(item, itemManager, dataProvider, clientThread, this);
+		remove(currentPanel);
+		currentPanel = itemPanel;
+		add(itemPanel, BorderLayout.CENTER);
+		updateUI();
 	}
 
 //	public NERInfoItem getItemByNameAndVersion(String itemName, String version)

@@ -22,7 +22,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -41,7 +40,6 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.util.AsyncBufferedImage;
 import net.runelite.client.util.ImageUtil;
-import org.apache.commons.text.similarity.LevenshteinDistance;
 
 @Slf4j
 public class NERRecipePanel extends JPanel
@@ -220,15 +218,15 @@ public class NERRecipePanel extends JPanel
 		});
 	}
 
-	private NERItem getNERItem(NERInfoItem itemInfo)
+	private void displayItem(NERInfoItem itemInfo)
 	{
-		NERItem nerItem = new NERItem(new AsyncBufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB), itemInfo);
-
 		clientThread.invokeLater(() -> {
-			nerItem.setIcon(this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID())));
+			AsyncBufferedImage icon = this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
+			NERItem nerItem = new NERItem(icon, itemInfo);
+
+			SwingUtilities.invokeLater(() -> mainPanel.displayItem(nerItem));
 		});
 
-		return nerItem;
 	}
 
 	private void addTooltip(JLabel toUnderline, String tooltip)
@@ -255,7 +253,7 @@ public class NERRecipePanel extends JPanel
 				if (itemInfo.getName().equals(useName) || itemInfo.getGroup().equals(useName)) {
 					return;
 				}
-				mainPanel.displayItem(getNERItem(itemInfo));
+				displayItem(itemInfo);
 			}
 
 			@Override
