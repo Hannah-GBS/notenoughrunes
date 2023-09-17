@@ -241,7 +241,7 @@ public class NERRecipePanel extends JPanel
 				.min(compareNameAndGroup(itemName, version))
 				.orElse(new NERInfoItem("null item", "", "", "", "", 0, false, false)));
 
-		NERItem nerItem = new NERItem(new AsyncBufferedImage(20, 20, BufferedImage.TYPE_INT_ARGB), itemInfo);
+		NERItem nerItem = new NERItem(new AsyncBufferedImage(clientThread, 20, 20, BufferedImage.TYPE_INT_ARGB), itemInfo);
 
 		clientThread.invokeLater(() -> nerItem.setIcon(this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()))));
 
