@@ -16,8 +16,6 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -95,12 +93,32 @@ class NERUsesPanel extends JPanel
 
 		setLayout(new BorderLayout());
 
-		GridBagConstraints containerGbc = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
-		JPanel recipeSection = createSection(SectionType.RECIPES);
+		dataProvider.executeMany(new ItemProducesQuery(nerItem.getInfoItem().getItemID()), recipes ->
+			dataProvider.executeMany(new ItemCurrencyQuery(useName), shops ->
+				SwingUtilities.invokeLater(() ->
+					buildPanel(recipes, shops))));
+	}
+
+	private void buildPanel(List<NERProductionRecipe> recipes, List<NERShop> shops)
+	{
+		GridBagConstraints containerGbc = new GridBagConstraints(
+			0,
+			0,
+			1,
+			1,
+			1.0,
+			1.0,
+			GridBagConstraints.LINE_START,
+			GridBagConstraints.BOTH,
+			new Insets(0, 0, 0, 0),
+			0,
+			0
+		);
+		JPanel recipeSection = createSection(SectionType.RECIPES, recipes, shops);
 		JPanel container = new JPanel(new GridBagLayout());
 		container.add(recipeSection, containerGbc);
 		containerGbc.gridy++;
-		JPanel shopsSection = createSection(SectionType.SHOPS);
+		JPanel shopsSection = createSection(SectionType.SHOPS, recipes, shops);
 		container.add(shopsSection, containerGbc);
 		containerGbc.gridy++;
 
@@ -118,26 +136,25 @@ class NERUsesPanel extends JPanel
 		add(scrollWrapper, BorderLayout.CENTER);
 	}
 
-	private JPanel createSection(SectionType sectionType)
+	private JPanel createSection(SectionType sectionType, List<NERProductionRecipe> recipes, List<NERShop> shops)
 	{
 		ArrayList<JPanel> sectionItems = new ArrayList<>();
 		switch (sectionType)
 		{
 			case RECIPES:
-				dataProvider.executeMany(new ItemProducesQuery(nerItem.getInfoItem().getItemID()))
-					.forEach((recipe) ->
-						sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName, dataProvider)));
+				recipes.forEach((recipe) ->
+					sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName, dataProvider)));
 				break;
 
 			case SHOPS:
-				List<NERShop> shops = dataProvider.executeMany(new ItemCurrencyQuery(useName));
-				if (!shops.isEmpty()) {
+				if (!shops.isEmpty())
+				{
 					sectionItems.add(new NERShopsPanel(shops, nerItem, itemManager, clientThread, true, mainPanel));
 				}
 				break;
 		}
 
-		if (sectionItems.size() < 1)
+		if (sectionItems.isEmpty())
 		{
 			return new JPanel();
 		}
@@ -155,7 +172,8 @@ class NERUsesPanel extends JPanel
 		// border on the right only affects the width when closed, fixing the issue.
 		sectionHeader.setBorder(new CompoundBorder(
 			new MatteBorder(0, 0, 1, 0, ColorScheme.MEDIUM_GRAY_COLOR),
-			new EmptyBorder(0, 0, 3, 1)));
+			new EmptyBorder(0, 0, 3, 1)
+		));
 		section.add(sectionHeader, BorderLayout.NORTH);
 
 		final JButton sectionToggle = new JButton(SECTION_EXPAND_ICON);
@@ -177,7 +195,8 @@ class NERUsesPanel extends JPanel
 		sectionContents.setMinimumSize(new Dimension(220, 0));
 		sectionContents.setBorder(new CompoundBorder(
 			new MatteBorder(0, 0, 1, 0, ColorScheme.MEDIUM_GRAY_COLOR),
-			new EmptyBorder(PluginPanel.BORDER_OFFSET, 0, PluginPanel.BORDER_OFFSET, 0)));
+			new EmptyBorder(PluginPanel.BORDER_OFFSET, 0, PluginPanel.BORDER_OFFSET, 0)
+		));
 		sectionContents.setVisible(false);
 		section.add(sectionContents, BorderLayout.SOUTH);
 

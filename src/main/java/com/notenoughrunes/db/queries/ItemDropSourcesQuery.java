@@ -29,13 +29,20 @@ public class ItemDropSourcesQuery extends ModeledQuery<NERDropSource>
 	@Override
 	public NERDropSource convertRow(ResultSet rs) throws SQLException
 	{
-		return new NERDropSource(
-			rs.getString("DROP_SOURCES.SOURCE"),
-			rs.getInt("DROP_SOURCES.QUANTITY_LOW"),
-			rs.getInt("DROP_SOURCES.QUANTITY_HIGH"),
-			rs.getString("DROP_SOURCES.RARITY"),
-			rs.getString("DROP_SOURCES.DROP_LEVEL"),
-			rs.getString("DROP_SOURCES.DROP_TYPE")
-		);
+		try
+		{
+			return new NERDropSource(
+				rs.getString("SOURCE"),
+				rs.getInt("QUANTITY_LOW"),
+				rs.getInt("QUANTITY_HIGH"),
+				rs.getString("RARITY"),
+				rs.getString("DROP_LEVEL"),
+				rs.getString("DROP_TYPE")
+			);
+		}
+		finally
+		{
+			rs.next();
+		}
 	}
 }

@@ -249,11 +249,14 @@ public class NERRecipePanel extends JPanel
 			@Override
 			public void mouseClicked(MouseEvent e)
 			{
-				NERInfoItem itemInfo = dataProvider.executeSingle(new ItemByIDQuery(itemID));
-				if (itemInfo.getName().equals(useName) || itemInfo.getGroup().equals(useName)) {
-					return;
-				}
-				displayItem(itemInfo);
+				dataProvider.executeSingle(new ItemByIDQuery(itemID), itemInfo ->
+					SwingUtilities.invokeLater(() ->
+					{
+						if (itemInfo.getName().equals(useName) || itemInfo.getGroup().equals(useName)) {
+							return;
+						}
+						displayItem(itemInfo);
+					}));
 			}
 
 			@Override

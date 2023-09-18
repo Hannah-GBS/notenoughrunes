@@ -19,7 +19,7 @@ public class ItemProducedByQuery extends ModeledQuery<NERProductionRecipe>
 	public String getSql()
 	{
 		//language=SQL
-		return "SELECT * " +
+		return "SELECT *, PR.ID AS PR_ID, PM.ID AS PM_ID, PS.ID AS PS_ID " +
 			"FROM PRODUCTION_RECIPES PR " +
 			"LEFT JOIN PRODUCTION_MATERIALS PM ON PR.ID = PM.RECIPE_ID " +
 			"LEFT JOIN PRODUCTION_SKILLS PS ON PR.ID = PS.RECIPE_ID " +
@@ -37,31 +37,31 @@ public class ItemProducedByQuery extends ModeledQuery<NERProductionRecipe>
 	@Override
 	public NERProductionRecipe convertRow(ResultSet rs) throws SQLException
 	{
-		int id = rs.getInt("PRODUCTION_RECIPES.ID");
+		int id = rs.getInt("PR_ID");
 		NERProductionRecipe res = new NERProductionRecipe(
-			rs.getString("PRODUCTION_RECIPES.TICKS"),
+			rs.getString("TICKS"),
 			new ArrayList<>(),
-			rs.getString("PRODUCTION_RECIPES.FACILITIES"),
-			rs.getString("PRODUCTION_RECIPES.TOOLS"),
+			rs.getString("FACILITIES"),
+			rs.getString("TOOLS"),
 			new ArrayList<>(),
-			rs.getBoolean("PRODUCTION_RECIPES.IS_MEMBERS"),
-			rs.getString("PRODUCTION_RECIPES.OUTPUT_ITEM_NAME"),
-			rs.getString("PRODUCTION_RECIPES.OUTPUT_ITEM_VERSION"),
-			rs.getInt("PRODUCTION_RECIPES.OUTPUT_ITEM_ID"),
-			rs.getString("PRODUCTION_RECIPES.OUTPUT_QUANTITY"),
-			rs.getString("PRODUCTION_RECIPES.OUTPUT_QUANTITY_NOTE"),
-			rs.getString("PRODUCTION_RECIPES.OUTPUT_SUBTEXT")
+			rs.getBoolean("IS_MEMBERS"),
+			rs.getString("OUTPUT_ITEM_NAME"),
+			rs.getString("OUTPUT_ITEM_VERSION"),
+			rs.getInt("OUTPUT_ITEM_ID"),
+			rs.getString("OUTPUT_QUANTITY"),
+			rs.getString("OUTPUT_QUANTITY_NOTE"),
+			rs.getString("OUTPUT_SUBTEXT")
 		);
 
 		do
 		{
-			if (rs.getInt("PRODUCTION_MATERIALS.ID") != 0)
+			if (rs.getInt("PM_ID") != 0)
 			{
 				NERProductionMaterial material = new NERProductionMaterial(
-					rs.getString("PRODUCTION_MATERIALS.ITEM_NAME"),
-					rs.getString("PRODUCTION_MATERIALS.ITEM_VERSION"),
-					rs.getInt("PRODUCTION_MATERIALS.ITEM_ID"),
-					rs.getString("PRODUCTION_MATERIALS.QUANTITY")
+					rs.getString("ITEM_NAME"),
+					rs.getString("ITEM_VERSION"),
+					rs.getInt("ITEM_ID"),
+					rs.getString("QUANTITY")
 				);
 
 				if (!res.getMaterials().contains(material)) {
@@ -69,23 +69,21 @@ public class ItemProducedByQuery extends ModeledQuery<NERProductionRecipe>
 				}
 			}
 
-			if (rs.getInt("PRODUCTION_SKILLS.ID") != 0)
+			if (rs.getInt("PS_ID") != 0)
 			{
 				NERProductionSkill skill = new NERProductionSkill(
-					rs.getString("PRODUCTION_SKILLS.NAME"),
-					rs.getString("PRODUCTION_SKILLS.LEVEL"),
-					rs.getString("PRODUCTION_SKILLS.EXPERIENCE"),
-					rs.getBoolean("PRODUCTION_SKILLS.IS_BOOSTABLE")
+					rs.getString("NAME"),
+					rs.getString("LEVEL"),
+					rs.getString("EXPERIENCE"),
+					rs.getBoolean("IS_BOOSTABLE")
 				);
 
 				if (!res.getSkills().contains(skill)) {
 					res.getSkills().add(skill);
 				}
 			}
-		} while (rs.next() && rs.getInt("PRODUCTION_RECIPES.ID") == id);
+		} while (rs.next() && rs.getInt("PR_ID") == id);
 
-		// caller will call next() immediately after this, so prevent skipping a row
-		rs.previous();
 		return res;
 	}
 }
