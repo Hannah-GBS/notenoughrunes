@@ -16,7 +16,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
@@ -90,8 +89,10 @@ class NERSearchResultsPanel extends JPanel
 		errorWrapper.setBackground(ColorScheme.DARK_GRAY_COLOR);
 		errorWrapper.add(errorPanel, BorderLayout.NORTH);
 
-		errorPanel.setContent("Not Enough Runes Search",
-			"Here you can search an item by its name to find its sources and uses");
+		errorPanel.setContent(
+			"Not Enough Runes Search",
+			"Here you can search an item by its name to find its sources and uses"
+		);
 
 		centerPanel.add(resultsWrapper, RESULTS_PANEL);
 		centerPanel.add(errorWrapper, ERROR_PANEL);
@@ -110,8 +111,10 @@ class NERSearchResultsPanel extends JPanel
 		if (Strings.isNullOrEmpty(lookup))
 		{
 			searchItemsPanel.removeAll();
-			errorPanel.setContent("Not Enough Runes Search",
-				"Here you can search an item by its name to find its sources and uses");
+			errorPanel.setContent(
+				"Not Enough Runes Search",
+				"Here you can search an item by its name to find its sources and uses"
+			);
 			cardLayout.show(centerPanel, ERROR_PANEL);
 			searchBar.setIcon(IconTextField.Icon.SEARCH);
 			SwingUtilities.invokeLater(searchItemsPanel::updateUI);
@@ -135,31 +138,31 @@ class NERSearchResultsPanel extends JPanel
 		String search = searchBar.getText();
 		results.clear();
 
-		this.clientThread.invokeLater(() ->
-		{
-			this.dataProvider.executeMany(new SearchItemsQuery(search))
-				.forEach((itemInfo) ->
+		this.dataProvider.executeMany(new SearchItemsQuery(search), searchResults ->
+			this.clientThread.invokeLater(() ->
+			{
+				searchResults.forEach((itemInfo) ->
 				{
 					AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
 					results.add(new NERItem(itemImage, itemInfo));
 				});
 
-			if (results.isEmpty())
-			{
-				searchBar.setIcon(IconTextField.Icon.ERROR);
-				errorPanel.setContent("No results found", "No items were found with that name, please try again.");
-				cardLayout.show(centerPanel, ERROR_PANEL);
-				searchBar.setEditable(true);
-				return;
-			}
+				if (results.isEmpty())
+				{
+					searchBar.setIcon(IconTextField.Icon.ERROR);
+					errorPanel.setContent("No results found", "No items were found with that name, please try again.");
+					cardLayout.show(centerPanel, ERROR_PANEL);
+					searchBar.setEditable(true);
+					return;
+				}
 
-			results = results.stream()
-				.sorted(compareNameAndGroup(search))
-				.collect(Collectors.toList());
+				results = results.stream()
+					.sorted(compareNameAndGroup(search))
+					.collect(Collectors.toList());
 
-			SwingUtilities.invokeLater(this::processResult);
-			searchBar.setIcon(IconTextField.Icon.SEARCH);
-		});
+				SwingUtilities.invokeLater(this::processResult);
+				searchBar.setIcon(IconTextField.Icon.SEARCH);
+			}));
 	}
 
 	void processResult()
@@ -167,7 +170,7 @@ class NERSearchResultsPanel extends JPanel
 
 		cardLayout.show(centerPanel, RESULTS_PANEL);
 		int index = 0;
-		if (results.size() == 0)
+		if (results.isEmpty())
 		{
 //			log.info("No results found");
 			return;

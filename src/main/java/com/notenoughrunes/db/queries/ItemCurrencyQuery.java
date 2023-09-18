@@ -18,7 +18,7 @@ public class ItemCurrencyQuery extends ModeledQuery<NERShop>
 	public String getSql()
 	{
 		//language=SQL
-		return "SELECT * FROM SHOPS S " +
+		return "SELECT S.*, SI.*, S.ID AS SHOP_ID, S.NAME AS SHOP_NAME, SI.ID AS SHOP_ITEM_ID FROM SHOPS S " +
 			"JOIN SHOP_ITEMS SI ON S.ID = SI.SHOP_ID " +
 //			"WHERE EXISTS (" +
 //			"	SELECT 1 FROM SHOP_ITEMS SI " +
@@ -37,27 +37,27 @@ public class ItemCurrencyQuery extends ModeledQuery<NERShop>
 	@Override
 	public NERShop convertRow(ResultSet rs) throws SQLException
 	{
-		int id = rs.getInt("SHOPS.ID");
+		int id = rs.getInt("SHOP_ID");
 		NERShop res = new NERShop(
-			rs.getString("SHOPS.NAME"),
-			rs.getString("SHOPS.SELL_MULTIPLIER"),
-			rs.getString("SHOPS.LOCATION"),
-			rs.getBoolean("SHOPS.IS_MEMBERS"),
+			rs.getString("SHOP_NAME"),
+			rs.getString("SELL_MULTIPLIER"),
+			rs.getString("LOCATION"),
+			rs.getBoolean("IS_MEMBERS"),
 			new ArrayList<>()
 		);
 
 		do
 		{
-			if (rs.getInt("SHOP_ITEMS.ID") != 0)
+			if (rs.getInt("SHOP_ITEM_ID") != 0)
 			{
 				NERShopItem shopItem = new NERShopItem(
-					rs.getString("SHOP_ITEMS.ITEM_NAME"),
-					rs.getString("SHOP_ITEMS.ITEM_VERSION"),
-					rs.getInt("SHOP_ITEMS.ITEM_ID"),
-					rs.getString("SHOP_ITEMS.CURRENCY"),
-					rs.getString("SHOP_ITEMS.STOCK"),
-					rs.getString("SHOP_ITEMS.BUY_PRICE"),
-					rs.getString("SHOP_ITEMS.SELL_PRICE")
+					rs.getString("ITEM_NAME"),
+					rs.getString("ITEM_VERSION"),
+					rs.getInt("ITEM_ID"),
+					rs.getString("CURRENCY"),
+					rs.getString("STOCK"),
+					rs.getString("BUY_PRICE"),
+					rs.getString("SELL_PRICE")
 				);
 
 				if (!res.getItems().contains(shopItem))
@@ -65,10 +65,8 @@ public class ItemCurrencyQuery extends ModeledQuery<NERShop>
 					res.getItems().add(shopItem);
 				}
 			}
-		} while (rs.next() && rs.getInt("SHOPS.ID") == id);
+		} while (rs.next() && rs.getInt("SHOP_ID") == id);
 
-		// caller will call next() immediately after this, so prevent skipping a row
-		rs.previous();
 		return res;
 	}
 }

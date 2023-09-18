@@ -14,7 +14,7 @@ def runeLiteVersion = "latest.release"
 
 dependencies {
 	compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
-    implementation group: 'com.h2database', name: 'h2', version: '2.1.212'
+    implementation 'org.xerial:sqlite-jdbc:3.43.0.0'
 
     compileOnly 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'

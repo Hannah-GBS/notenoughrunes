@@ -10,7 +10,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 public class H2DataProvider implements AutoCloseable
 {
 
+	private static final ExecutorService DB_THREAD = Executors.newSingleThreadExecutor();
+
 	private final H2DbFetcher dbFetcher;
 
 	private Connection db;
@@ -32,26 +37,21 @@ public class H2DataProvider implements AutoCloseable
 		initialized = false;
 
 		dbFetcher.fetch(() ->
-		{
-			try
+			DB_THREAD.submit(() ->
 			{
-				String dbPath = H2DbFetcher.dbFile.getAbsolutePath();
-				log.debug("Creating db connection to {}", dbPath);
-				db = DriverManager.getConnection(buildConnectionString(
-					dbPath.replace(H2DbFetcher.dbFileExt, ""),
-					"TRACE_LEVEL_SYSTEM_OUT=1", // ERROR
-					"TRACE_LEVEL_FILE=0", // OFF
-					"ACCESS_MODE_DATA=r", // readonly
-					"MODE=MYSQL" // compat features
-				));
-			}
-			catch (SQLException e)
-			{
-				log.error("Failed to open connection to database file", e);
-			}
+				try
+				{
+					String dbPath = H2DbFetcher.dbFile.getAbsolutePath();
+					log.debug("Creating db connection to {}", dbPath);
+					db = DriverManager.getConnection(buildConnectionString(dbPath));
+				}
+				catch (SQLException e)
+				{
+					log.error("Failed to open connection to database file", e);
+				}
 
-			initialized = true;
-		});
+				initialized = true;
+			}));
 	}
 
 	@Override
@@ -61,59 +61,55 @@ public class H2DataProvider implements AutoCloseable
 		db.close();
 	}
 
-	private static String buildConnectionString(String fileName, String... parameters)
+	private static String buildConnectionString(String fileName)
 	{
-		StringBuilder sb = new StringBuilder("jdbc:h2:file:");
-		sb.append(fileName);
-
-		for (String p : parameters)
-		{
-			sb.append(';');
-			sb.append(p);
-		}
-
-		return sb.toString();
+		return "jdbc:sqlite:" + fileName;
 	}
 
-	public <T> T executeSingle(ModeledQuery<T> query)
+	public <T> void executeSingle(ModeledQuery<T> query, Consumer<T> callback)
 	{
-		List<T> res = executeMany(query);
-		return res.isEmpty() ? null : res.get(0);
+		executeMany(query, res ->
+			callback.accept(res.isEmpty() ? null : res.get(0)));
 	}
 
-	public <T> List<T> executeMany(ModeledQuery<T> query)
+	public <T> void executeMany(ModeledQuery<T> query, Consumer<List<T>> callback)
 	{
 		if (!initialized)
 		{
-			return Collections.emptyList();
+			callback.accept(Collections.emptyList());
 		}
 
-		Stopwatch sw = Stopwatch.createStarted();
-		try
+		DB_THREAD.submit(() ->
 		{
-			PreparedStatement ps = createStatement(query.getSql());
-			query.setParams(ps);
-
-			try (ResultSet rs = ps.executeQuery())
+			Stopwatch sw = Stopwatch.createStarted();
+			try (PreparedStatement ps = createStatement(query.getSql()))
 			{
-				List<T> res = new ArrayList<>();
-				while (rs.next())
-				{
-					res.add(query.convertRow(rs));
-				}
+				query.setParams(ps);
 
-				return res;
+				try (ResultSet rs = ps.executeQuery())
+				{
+					List<T> res = new ArrayList<>();
+					if (rs.next())
+					{
+						while (!rs.isAfterLast())
+						{
+							res.add(query.convertRow(rs));
+						}
+					}
+
+					callback.accept(res);
+				}
 			}
-		}
-		catch (Exception e)
-		{
-			log.warn("Query failed in wrapMany", e);
-			return Collections.emptyList();
-		}
-		finally
-		{
-			log.debug("[{}μs] Query {}", sw.elapsed(TimeUnit.MICROSECONDS), query.getSql());
-		}
+			catch (Exception e)
+			{
+				log.warn("Query failed in wrapMany", e);
+				callback.accept(Collections.emptyList());
+			}
+			finally
+			{
+				log.debug("[{}μs] Query {}", sw.elapsed(TimeUnit.MICROSECONDS), query.getSql());
+			}
+		});
 	}
 
 	private PreparedStatement createStatement(String sql) throws SQLException
@@ -123,7 +119,7 @@ public class H2DataProvider implements AutoCloseable
 			throw new IllegalStateException("Cannot createStatement on a closed connection");
 		}
 
-		return db.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		return db.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 	}
 
 }

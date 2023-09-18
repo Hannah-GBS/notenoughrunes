@@ -8,7 +8,9 @@ import com.notenoughrunes.db.queries.ItemSoldAtQuery;
 import com.notenoughrunes.db.queries.ItemSpawnQuery;
 import com.notenoughrunes.types.NERDropItem;
 import com.notenoughrunes.types.NERDropSource;
+import com.notenoughrunes.types.NERProductionRecipe;
 import com.notenoughrunes.types.NERShop;
+import com.notenoughrunes.types.NERSpawnItem;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -99,20 +101,30 @@ class NERSourcesPanel extends JPanel
 			? nerItem.getInfoItem().getName()
 			: nerItem.getInfoItem().getGroup();
 
+		dataProvider.executeMany(new ItemProducedByQuery(nerItem.getInfoItem().getItemID()), recipes ->
+			dataProvider.executeMany(new ItemDropSourcesQuery(useName), dropSources ->
+				dataProvider.executeMany(new ItemSoldAtQuery(nerItem.getInfoItem().getItemID()), shops ->
+					dataProvider.executeMany(new ItemSpawnQuery(nerItem.getInfoItem().getName(), nerItem.getInfoItem().getGroup()), spawns ->
+						SwingUtilities.invokeLater(() ->
+							buildPanel(recipes, dropSources, shops, spawns))))));
+	}
+
+	private void buildPanel(List<NERProductionRecipe> recipes, List<NERDropSource> dropSources, List<NERShop> shops, List<NERSpawnItem> spawns)
+	{
 		setLayout(new BorderLayout());
 
 		GridBagConstraints containerGbc = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
-		JPanel recipeSection = createSection(SectionType.RECIPES);
+		JPanel recipeSection = createSection(SectionType.RECIPES, recipes, dropSources, shops, spawns);
 		JPanel container = new JPanel(new GridBagLayout());
 		container.add(recipeSection, containerGbc);
 		containerGbc.gridy++;
-		JPanel dropsSection = createSection(SectionType.DROPS);
+		JPanel dropsSection = createSection(SectionType.DROPS, recipes, dropSources, shops, spawns);
 		container.add(dropsSection, containerGbc);
 		containerGbc.gridy++;
-		JPanel shopsSection = createSection(SectionType.SHOPS);
+		JPanel shopsSection = createSection(SectionType.SHOPS, recipes, dropSources, shops, spawns);
 		container.add(shopsSection, containerGbc);
 		containerGbc.gridy++;
-		JPanel spawnsSection = createSection(SectionType.SPAWNS);
+		JPanel spawnsSection = createSection(SectionType.SPAWNS, recipes, dropSources, shops, spawns);
 		container.add(spawnsSection, containerGbc);
 		containerGbc.gridy++;
 
@@ -131,41 +143,37 @@ class NERSourcesPanel extends JPanel
 		add(scrollWrapper, BorderLayout.CENTER);
 	}
 
-	private JPanel createSection(SectionType sectionType)
+	private JPanel createSection(SectionType sectionType, List<NERProductionRecipe> recipes, List<NERDropSource> dropSources, List<NERShop> shops, List<NERSpawnItem> spawns)
 	{
 		ArrayList<JPanel> sectionItems = new ArrayList<>();
 		switch (sectionType)
 		{
 			case RECIPES:
-				dataProvider.executeMany(new ItemProducedByQuery(nerItem.getInfoItem().getItemID()))
-					.forEach((recipe) ->
+				recipes.forEach((recipe) ->
 						sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName, dataProvider)));
 				break;
 
 			case DROPS:
-				List<NERDropSource> dropSources = dataProvider.executeMany(new ItemDropSourcesQuery(useName));
 				if (!dropSources.isEmpty()) {
 					sectionItems.add(new NERDropsPanel(new NERDropItem(useName, dropSources)));
 				}
 				break;
 
 			case SHOPS:
-				List<NERShop> shops = dataProvider.executeMany(new ItemSoldAtQuery(nerItem.getInfoItem().getItemID()));
 				if (!shops.isEmpty()) {
 					sectionItems.add(new NERShopsPanel(shops, nerItem, itemManager, clientThread, false, mainPanel));
 				}
 				break;
 
 			case SPAWNS:
-				dataProvider.executeMany(new ItemSpawnQuery(nerItem.getInfoItem().getName(), nerItem.getInfoItem().getGroup()))
-					.forEach((spawnItem) ->
+				spawns.forEach((spawnItem) ->
 						sectionItems.add(new NERSpawnPanel(spawnItem)));
 //					.limit(MAX_ENTRIES)
 
 				break;
 		}
 
-		if (sectionItems.size() < 1)
+		if (sectionItems.isEmpty())
 		{
 			JPanel emptyPanel = new JPanel();
 			emptyPanel.setMinimumSize(new Dimension(0, 0));

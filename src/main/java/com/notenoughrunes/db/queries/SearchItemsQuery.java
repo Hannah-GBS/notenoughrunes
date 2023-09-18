@@ -31,15 +31,22 @@ public class SearchItemsQuery extends ModeledQuery<NERInfoItem>
 	@Override
 	public NERInfoItem convertRow(ResultSet rs) throws SQLException
 	{
-		return new NERInfoItem(
-			rs.getInt("ITEMS.ID"),
-			rs.getString("ITEMS.NAME"),
-			rs.getString("ITEMS.EXAMINE_TEXT"),
-			rs.getString("ITEM_GROUPS.NAME"),
-			rs.getString("ITEMS.VERSION"),
-			rs.getString("ITEMS.URL"),
-			rs.getBoolean("ITEMS.IS_MEMBERS"),
-			rs.getBoolean("ITEMS.IS_TRADEABLE")
-		);
+		try
+		{
+			return new NERInfoItem(
+				rs.getInt("ID"),
+				rs.getString("NAME"),
+				rs.getString("EXAMINE_TEXT"),
+				rs.getString("NAME"),
+				rs.getString("VERSION"),
+				rs.getString("URL"),
+				rs.getBoolean("IS_MEMBERS"),
+				rs.getBoolean("IS_TRADEABLE")
+			);
+		}
+		finally
+		{
+			rs.next();
+		}
 	}
 }
