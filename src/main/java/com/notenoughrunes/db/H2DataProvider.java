@@ -1,5 +1,6 @@
 package com.notenoughrunes.db;
 
+import com.google.common.base.Stopwatch;
 import com.notenoughrunes.db.queries.ModeledQuery;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,6 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.RequiredArgsConstructor;
@@ -47,9 +49,9 @@ public class H2DataProvider implements AutoCloseable
 			{
 				log.error("Failed to open connection to database file", e);
 			}
-		});
 
-		initialized = true;
+			initialized = true;
+		});
 	}
 
 	@Override
@@ -86,6 +88,7 @@ public class H2DataProvider implements AutoCloseable
 			return Collections.emptyList();
 		}
 
+		Stopwatch sw = Stopwatch.createStarted();
 		try
 		{
 			PreparedStatement ps = createStatement(query.getSql());
@@ -106,6 +109,10 @@ public class H2DataProvider implements AutoCloseable
 		{
 			log.warn("Query failed in wrapMany", e);
 			return Collections.emptyList();
+		}
+		finally
+		{
+			log.debug("[{}μs] Query {}", sw.elapsed(TimeUnit.MICROSECONDS), query.getSql());
 		}
 	}
 

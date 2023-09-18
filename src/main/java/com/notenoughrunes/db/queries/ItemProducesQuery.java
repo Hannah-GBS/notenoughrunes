@@ -19,14 +19,12 @@ public class ItemProducesQuery extends ModeledQuery<NERProductionRecipe>
 	public String getSql()
 	{
 		//language=SQL
-		return "SELECT * " +
-			"FROM PRODUCTION_RECIPES PR " +
-			"LEFT JOIN PRODUCTION_MATERIALS PM ON PR.ID = PM.RECIPE_ID " +
+		return "SELECT PR.*, PS.*, PM.* " +
+			"FROM PRODUCTION_MATERIALS PM_QUERY " +
+			"JOIN PRODUCTION_RECIPES PR ON PM_QUERY.RECIPE_ID = PR.ID " +
 			"LEFT JOIN PRODUCTION_SKILLS PS ON PR.ID = PS.RECIPE_ID " +
-			"WHERE EXISTS (" +
-			"	SELECT 1 FROM PRODUCTION_MATERIALS PM " +
-			"	WHERE PR.ID = PM.RECIPE_ID" +
-			"	AND PM.ITEM_ID = ?) " +
+			"LEFT JOIN PRODUCTION_MATERIALS PM ON PR.ID = PM.RECIPE_ID " +
+			"WHERE PM_QUERY.ITEM_ID = ? " +
 			"LIMIT 100";
 	}
 
