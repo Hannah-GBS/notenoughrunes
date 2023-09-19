@@ -2,7 +2,6 @@ package com.notenoughrunes.types;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
-import java.util.Set;
 import javax.annotation.Nullable;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
