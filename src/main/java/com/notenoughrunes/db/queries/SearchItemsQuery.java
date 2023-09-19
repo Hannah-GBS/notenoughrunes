@@ -16,7 +16,7 @@ public class SearchItemsQuery extends ModeledQuery<NERInfoItem>
 	public String getSql()
 	{
 		//language=SQL
-		return "SELECT * FROM ITEMS I " +
+		return "SELECT I.*, IG.NAME AS GROUP_NAME FROM ITEMS I " +
 			"LEFT JOIN ITEM_GROUPS IG on IG.ID = I.GROUP_ID " +
 			"WHERE I.SEARCH_NAME LIKE ? " +
 			"LIMIT 200";
@@ -37,7 +37,7 @@ public class SearchItemsQuery extends ModeledQuery<NERInfoItem>
 				rs.getInt("ID"),
 				rs.getString("NAME"),
 				rs.getString("EXAMINE_TEXT"),
-				rs.getString("NAME"),
+				rs.getString("GROUP_NAME"),
 				rs.getString("VERSION"),
 				rs.getString("URL"),
 				rs.getBoolean("IS_MEMBERS"),

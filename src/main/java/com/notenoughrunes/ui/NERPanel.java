@@ -115,6 +115,7 @@ public class NERPanel extends PluginPanel
 		remove(currentPanel);
 		currentPanel = itemPanel;
 		add(itemPanel, BorderLayout.CENTER);
+//		itemPanel.validate();
 		updateUI();
 	}
 
