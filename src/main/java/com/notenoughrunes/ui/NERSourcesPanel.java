@@ -101,6 +101,8 @@ class NERSourcesPanel extends JPanel
 			? nerItem.getInfoItem().getName()
 			: nerItem.getInfoItem().getGroup();
 
+		setLayout(new BorderLayout());
+
 		dataProvider.executeMany(new ItemProducedByQuery(nerItem.getInfoItem().getItemID()), recipes ->
 			dataProvider.executeMany(new ItemDropSourcesQuery(useName), dropSources ->
 				dataProvider.executeMany(new ItemSoldAtQuery(nerItem.getInfoItem().getItemID()), shops ->
@@ -111,8 +113,6 @@ class NERSourcesPanel extends JPanel
 
 	private void buildPanel(List<NERProductionRecipe> recipes, List<NERDropSource> dropSources, List<NERShop> shops, List<NERSpawnItem> spawns)
 	{
-		setLayout(new BorderLayout());
-
 		GridBagConstraints containerGbc = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
 		JPanel recipeSection = createSection(SectionType.RECIPES, recipes, dropSources, shops, spawns);
 		JPanel container = new JPanel(new GridBagLayout());
@@ -141,6 +141,7 @@ class NERSourcesPanel extends JPanel
 		scrollWrapper.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
 		add(scrollWrapper, BorderLayout.CENTER);
+		revalidate();
 	}
 
 	private JPanel createSection(SectionType sectionType, List<NERProductionRecipe> recipes, List<NERDropSource> dropSources, List<NERShop> shops, List<NERSpawnItem> spawns)
