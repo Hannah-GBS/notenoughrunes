@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -41,9 +42,14 @@ public class H2DataProvider implements AutoCloseable
 			{
 				try
 				{
+					Class.forName("org.sqlite.JDBC");
 					String dbPath = H2DbFetcher.dbFile.getAbsolutePath();
 					log.debug("Creating db connection to {}", dbPath);
 					db = DriverManager.getConnection(buildConnectionString(dbPath));
+				}
+				catch (ClassNotFoundException e)
+				{
+					log.error("Failed to load SQLite JDBC driver class", e);
 				}
 				catch (SQLException e)
 				{
