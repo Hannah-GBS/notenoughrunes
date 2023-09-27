@@ -14,8 +14,6 @@ import static java.awt.GridBagConstraints.NONE;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -50,20 +48,8 @@ public class NERShopsPanel extends JPanel
 		shopLoop:
 		for (NERShop shop : shops)
 		{
-			Set<NERShopItem> shopItems;
-			if (!isCurrency)
-			{
-				shopItems = shop.getItems().stream()
-					.filter(item -> item.getName().equals(useName))
-					.collect(Collectors.toSet());
-			}
-			else
-			{
-				shopItems = shop.getItems().stream()
-					.filter(item -> item.getCurrency().equals(useName))
-					.collect(Collectors.toSet());
-			}
-
+			List<NERShopItem> shopItems;
+			shopItems = shop.getItems();
 
 			for (NERShopItem shopItem : shopItems)
 			{
@@ -106,7 +92,7 @@ public class NERShopsPanel extends JPanel
 							sellPrice = String.valueOf(itemManager.getItemComposition(
 								itemManager.canonicalize(
 									nerItem.getInfoItem().getItemID()))
-								.getPrice() * (Integer.parseInt(shop.getSellMultiplier()) / 1000));
+								.getPrice() * (Integer.parseInt(shop.getSellMultiplier())) / 1000);
 						}
 					}
 					else
