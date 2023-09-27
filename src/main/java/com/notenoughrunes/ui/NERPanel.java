@@ -3,6 +3,8 @@ package com.notenoughrunes.ui;
 import com.google.common.base.Strings;
 import com.notenoughrunes.NotEnoughRunesPlugin;
 import com.notenoughrunes.db.H2DataProvider;
+import com.notenoughrunes.db.queries.ItemByIDQuery;
+import com.notenoughrunes.types.NERInfoItem;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.concurrent.ScheduledExecutorService;
@@ -17,6 +19,7 @@ import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
+import net.runelite.client.util.AsyncBufferedImage;
 
 @Slf4j
 public class NERPanel extends PluginPanel
@@ -64,6 +67,7 @@ public class NERPanel extends PluginPanel
 
 		add(searchBar, BorderLayout.NORTH);
 		add(searchResultsPanel);
+		currentPanel = searchResultsPanel;
 	}
 
 	private void updateSearch()
@@ -115,8 +119,23 @@ public class NERPanel extends PluginPanel
 		remove(currentPanel);
 		currentPanel = itemPanel;
 		add(itemPanel, BorderLayout.CENTER);
-//		itemPanel.validate();
 		updateUI();
+	}
+
+	public void displayItemById(int itemId)
+	{
+		dataProvider.executeSingle(new ItemByIDQuery(itemId), this::getNerItem);
+	}
+
+	void getNerItem(NERInfoItem itemInfo)
+	{
+		clientThread.invokeLater(() ->
+		{
+			AsyncBufferedImage icon = this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
+			NERItem nerItem = new NERItem(icon, itemInfo);
+
+			SwingUtilities.invokeLater(() -> displayItem(nerItem));
+		});
 	}
 
 //	public NERInfoItem getItemByNameAndVersion(String itemName, String version)
