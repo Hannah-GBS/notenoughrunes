@@ -17,11 +17,10 @@ import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.events.MenuOpened;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetID;
-import net.runelite.api.widgets.WidgetInfo;
+import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.RuneLite;
-import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -107,12 +106,12 @@ public class NotEnoughRunesPlugin extends Plugin
 			final MenuEntry entry = entries[idx];
 			final Widget w = entry.getWidget();
 
-			boolean shouldAddInv = w != null && (WidgetInfo.TO_GROUP(w.getId()) == WidgetID.INVENTORY_GROUP_ID
-					|| WidgetInfo.TO_GROUP(w.getId()) == WidgetID.BANK_INVENTORY_GROUP_ID)
+			boolean shouldAddInv = w != null && (WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY
+					|| WidgetUtil.componentToInterface(w.getId()) == InterfaceID.BANK_INVENTORY)
 				&& config.invLookupMode() != MenuLookupMode.DISABLED
 					&& !(config.invLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
 
-			boolean shouldAddBank = w != null && WidgetInfo.TO_GROUP(w.getId()) == WidgetID.BANK_GROUP_ID
+			boolean shouldAddBank = w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.BANK
 				&& config.bankLookupMode() != MenuLookupMode.DISABLED
 				&& !(config.bankLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
 
