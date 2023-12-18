@@ -122,16 +122,20 @@ public class NERPanel extends PluginPanel
 		updateUI();
 	}
 
-	public void displayItemById(int itemId)
+	public void displayItemById(int rawItemId)
 	{
-		dataProvider.executeSingle(new ItemByIDQuery(itemId), this::getNerItem);
+		clientThread.invokeLater(() ->
+		{
+			int itemId = itemManager.canonicalize(rawItemId);
+			dataProvider.executeSingle(new ItemByIDQuery(itemId), this::getNerItem);
+		});
 	}
 
 	void getNerItem(NERInfoItem itemInfo)
 	{
 		clientThread.invokeLater(() ->
 		{
-			AsyncBufferedImage icon = this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
+			AsyncBufferedImage icon = itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
 			NERItem nerItem = new NERItem(icon, itemInfo);
 
 			SwingUtilities.invokeLater(() -> displayItem(nerItem));
