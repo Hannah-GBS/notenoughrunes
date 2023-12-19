@@ -8,6 +8,7 @@ import com.notenoughrunes.ui.NERPanel;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.inject.Inject;
+import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -126,10 +127,8 @@ public class NotEnoughRunesPlugin extends Plugin
 					.onClick(e ->
 					{
 						nerPanel.displayItemById(itemId);
-						if (!navButton.isSelected())
-						{
-							navButton.getOnSelect().run();
-						}
+						SwingUtilities.invokeLater(() -> clientToolbar.openPanel(navButton));
+
 					});
 			}
 		}
