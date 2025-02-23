@@ -1,5 +1,6 @@
 package com.notenoughrunes;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.inject.Provides;
 import com.notenoughrunes.config.MenuLookupMode;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.EnumComposition;
 import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
@@ -66,6 +68,11 @@ public class NotEnoughRunesPlugin extends Plugin
 	@Getter(AccessLevel.PACKAGE)
 	@Setter(AccessLevel.PACKAGE)
 	private NERPanel nerPanel;
+
+	// Items with different collection log IDs that are not mapped by Enum 3721
+	private static final Map<Integer, Integer> ITEM_ID_MAP = new ImmutableMap.Builder<Integer, Integer>()
+		.put(25615, 21539) // Large water container
+		.build();
 
 	@Override
 	protected void startUp() throws Exception
@@ -132,14 +139,35 @@ public class NotEnoughRunesPlugin extends Plugin
 				&& config.bankLookupMode() != MenuLookupMode.DISABLED
 				&& !(config.bankLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
 
-			if ((shouldAddInv || shouldAddEquip || shouldAddBank)
+			boolean shouldAddClog = (group == InterfaceID.COLLECTION_LOG && w.getParentId() == 40697893) // Don't show on search
+				&& config.clogLookupMode() != MenuLookupMode.DISABLED
+				&& !(config.clogLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
+
+			if (((shouldAddInv || shouldAddEquip || shouldAddBank)
 				&& "Examine".equals(entry.getOption()) && entry.getIdentifier() == 10)
+				|| (shouldAddClog && "Check".equals(entry.getOption()) && entry.getIdentifier() == 1))
 			{
 				int itemId = w.getItemId();
 				if (shouldAddEquip) {
 					final Widget widgetItem = w.getChild(1);
 					if (widgetItem != null) {
 						itemId = widgetItem.getItemId();
+					}
+				}
+
+				// Handle items with different IDs in the log than in inventories
+				if (shouldAddClog) {
+					final EnumComposition itemMapEnum = client.getEnum(3721);
+					int[] keys = itemMapEnum.getKeys();
+					int[] values = itemMapEnum.getIntVals();
+					for (int i = 0; i < values.length; i++){
+						if (values[i] == itemId) {
+							itemId = keys[i];
+						}
+					}
+
+					if (ITEM_ID_MAP.containsKey(itemId)) {
+						itemId = ITEM_ID_MAP.get(itemId);
 					}
 				}
 

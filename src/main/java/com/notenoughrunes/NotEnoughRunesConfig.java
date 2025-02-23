@@ -45,10 +45,20 @@ public interface NotEnoughRunesConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "clogLookupMode",
+		name = "CLog Lookup",
+		description = "Whether to show a NEr Lookup option on collection log items, and when",
+		position = 3
+	)
+	default MenuLookupMode clogLookupMode() {
+		return MenuLookupMode.RIGHT;
+	}
+
+	@ConfigItem(
 		keyName = "defaultOpenSources",
 		name = "Default Open Sources",
 		description = "Which 'Sources' categories to open by default",
-		position = 3
+		position = 4
 	)
 	default Set<DefaultOpenSources> defaultOpenSources() {
 		return Collections.emptySet();
@@ -58,7 +68,7 @@ public interface NotEnoughRunesConfig extends Config
 		keyName = "defaultOpenUses",
 		name = "Default Open Uses",
 		description = "Which 'Uses' categories to open by default",
-		position = 4
+		position = 5
 	)
 	default Set<DefaultOpenUses> defaultOpenUses() {
 		return Collections.emptySet();
