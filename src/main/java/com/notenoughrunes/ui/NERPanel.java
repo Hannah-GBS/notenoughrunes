@@ -1,6 +1,7 @@
 package com.notenoughrunes.ui;
 
 import com.google.common.base.Strings;
+import com.notenoughrunes.NotEnoughRunesConfig;
 import com.notenoughrunes.NotEnoughRunesPlugin;
 import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.db.queries.ItemByIDQuery;
@@ -28,6 +29,7 @@ public class NERPanel extends PluginPanel
 	private final ClientThread clientThread;
 	private final ItemManager itemManager;
 	private final H2DataProvider dataProvider;
+	private final NotEnoughRunesConfig config;
 
 	public final static int MAX_ENTRIES = 100;
 
@@ -45,7 +47,8 @@ public class NERPanel extends PluginPanel
 		ClientThread clientThread,
 		ItemManager itemManager,
 		H2DataProvider dataProvider,
-		ScheduledExecutorService executor
+		ScheduledExecutorService executor,
+		NotEnoughRunesConfig config
 	)
 	{
 		super(false);
@@ -53,6 +56,7 @@ public class NERPanel extends PluginPanel
 		this.clientThread = clientThread;
 		this.itemManager = itemManager;
 		this.dataProvider = dataProvider;
+		this.config = config;
 
 		setLayout(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
@@ -115,7 +119,7 @@ public class NERPanel extends PluginPanel
 
 	void displayItem(NERItem item)
 	{
-		itemPanel = new NERItemPanel(item, itemManager, dataProvider, clientThread, this);
+		itemPanel = new NERItemPanel(item, itemManager, dataProvider, clientThread, this, config);
 		remove(currentPanel);
 		currentPanel = itemPanel;
 		add(itemPanel, BorderLayout.CENTER);

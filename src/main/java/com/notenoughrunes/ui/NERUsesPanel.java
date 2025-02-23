@@ -1,6 +1,9 @@
 package com.notenoughrunes.ui;
 
+import com.notenoughrunes.NotEnoughRunesConfig;
 import com.notenoughrunes.NotEnoughRunesPlugin;
+import com.notenoughrunes.UseSectionType;
+import com.notenoughrunes.config.DefaultOpenUses;
 import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.db.queries.ItemCurrencyQuery;
 import com.notenoughrunes.db.queries.ItemProducesQuery;
@@ -27,7 +30,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
-import lombok.AllArgsConstructor;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
@@ -53,16 +55,7 @@ class NERUsesPanel extends JPanel
 	private final ClientThread clientThread;
 	private final String useName;
 	private final NERPanel mainPanel;
-
-	@AllArgsConstructor
-	enum SectionType
-	{
-		RECIPES("Recipes", "Item recipe uses"),
-		SHOPS("Shops", "Item shop uses");
-
-		private final String sectionName;
-		private final String sectionDesc;
-	}
+	private final NotEnoughRunesConfig config;
 
 	static
 	{
@@ -79,13 +72,14 @@ class NERUsesPanel extends JPanel
 		SECTION_RETRACT_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(sectionExpandIcon, -100));
 	}
 
-	NERUsesPanel(NERItem nerItem, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel)
+	NERUsesPanel(NERItem nerItem, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel, NotEnoughRunesConfig config)
 	{
 		this.nerItem = nerItem;
 		this.dataProvider = dataProvider;
 		this.itemManager = itemManager;
 		this.clientThread = clientThread;
 		this.mainPanel = mainPanel;
+		this.config = config;
 
 		this.useName = nerItem.getInfoItem().getName().length() > nerItem.getInfoItem().getGroup().length()
 			? nerItem.getInfoItem().getName()
@@ -114,11 +108,11 @@ class NERUsesPanel extends JPanel
 			0,
 			0
 		);
-		JPanel recipeSection = createSection(SectionType.RECIPES, recipes, shops);
+		JPanel recipeSection = createSection(UseSectionType.RECIPES, recipes, shops);
 		JPanel container = new JPanel(new GridBagLayout());
 		container.add(recipeSection, containerGbc);
 		containerGbc.gridy++;
-		JPanel shopsSection = createSection(SectionType.SHOPS, recipes, shops);
+		JPanel shopsSection = createSection(UseSectionType.SHOPS, recipes, shops);
 		container.add(shopsSection, containerGbc);
 		containerGbc.gridy++;
 
@@ -136,10 +130,10 @@ class NERUsesPanel extends JPanel
 		add(scrollWrapper, BorderLayout.CENTER);
 	}
 
-	private JPanel createSection(SectionType sectionType, List<NERProductionRecipe> recipes, List<NERShop> shops)
+	private JPanel createSection(UseSectionType useSectionType, List<NERProductionRecipe> recipes, List<NERShop> shops)
 	{
 		ArrayList<JPanel> sectionItems = new ArrayList<>();
-		switch (sectionType)
+		switch (useSectionType)
 		{
 			case RECIPES:
 				recipes.forEach((recipe) ->
@@ -184,10 +178,10 @@ class NERUsesPanel extends JPanel
 		SwingUtil.removeButtonDecorations(sectionToggle);
 		sectionHeader.add(sectionToggle, BorderLayout.WEST);
 
-		final JLabel sectionName = new JLabel(sectionType.sectionName);
+		final JLabel sectionName = new JLabel(useSectionType.sectionName);
 		sectionName.setForeground(ColorScheme.BRAND_ORANGE);
 		sectionName.setFont(FontManager.getRunescapeBoldFont());
-		sectionName.setToolTipText(sectionType.sectionDesc);
+		sectionName.setToolTipText(useSectionType.sectionDesc);
 		sectionHeader.add(sectionName, BorderLayout.CENTER);
 
 		final JPanel sectionContents = new JPanel();
@@ -213,6 +207,10 @@ class NERUsesPanel extends JPanel
 		sectionHeader.addMouseListener(sectionAdapter);
 
 		sectionItems.forEach(sectionContents::add);
+
+		if (config.defaultOpenUses().contains(DefaultOpenUses.of(useSectionType))) {
+			toggleSection(sectionToggle, sectionContents);
+		}
 
 		return section;
 	}

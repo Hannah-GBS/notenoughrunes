@@ -1,6 +1,10 @@
 package com.notenoughrunes;
 
+import com.notenoughrunes.config.DefaultOpenSources;
+import com.notenoughrunes.config.DefaultOpenUses;
 import com.notenoughrunes.config.MenuLookupMode;
+import java.util.Collections;
+import java.util.Set;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
@@ -30,5 +34,24 @@ public interface NotEnoughRunesConfig extends Config
 		return MenuLookupMode.RIGHT;
 	}
 
+	@ConfigItem(
+		keyName = "defaultOpenSources",
+		name = "Default Open Sources",
+		description = "Which 'Sources' categories to open by default",
+		position = 2
+	)
+	default Set<DefaultOpenSources> defaultOpenSources() {
+		return Collections.emptySet();
+	}
+
+	@ConfigItem(
+		keyName = "defaultOpenUses",
+		name = "Default Open Uses",
+		description = "Which 'Uses' categories to open by default",
+		position = 2
+	)
+	default Set<DefaultOpenUses> defaultOpenUses() {
+		return Collections.emptySet();
+	}
 
 }

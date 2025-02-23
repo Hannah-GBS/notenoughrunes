@@ -1,6 +1,9 @@
 package com.notenoughrunes.ui;
 
+import com.notenoughrunes.NotEnoughRunesConfig;
 import com.notenoughrunes.NotEnoughRunesPlugin;
+import com.notenoughrunes.SourceSectionType;
+import com.notenoughrunes.config.DefaultOpenSources;
 import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.db.queries.ItemDropSourcesQuery;
 import com.notenoughrunes.db.queries.ItemProducedByQuery;
@@ -32,7 +35,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
@@ -60,19 +62,7 @@ class NERSourcesPanel extends JPanel
 	private final ClientThread clientThread;
 	private final String useName;
 	private final NERPanel mainPanel;
-
-
-	@AllArgsConstructor
-	enum SectionType
-	{
-		RECIPES("Recipes", "Item recipes"),
-		DROPS("Drops", "Item drop sources"),
-		SHOPS("Shops", "Item shop sources"),
-		SPAWNS("Spawns", "Item world spawns");
-
-		private final String sectionName;
-		private final String sectionDesc;
-	}
+	private final NotEnoughRunesConfig config;
 
 	static
 	{
@@ -89,13 +79,14 @@ class NERSourcesPanel extends JPanel
 		SECTION_RETRACT_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(sectionExpandIcon, -100));
 	}
 
-	NERSourcesPanel(NERItem nerItem, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel)
+	NERSourcesPanel(NERItem nerItem, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel, NotEnoughRunesConfig config)
 	{
 		this.nerItem = nerItem;
 		this.dataProvider = dataProvider;
 		this.itemManager = itemManager;
 		this.clientThread = clientThread;
 		this.mainPanel = mainPanel;
+		this.config = config;
 
 		this.useName = nerItem.getInfoItem().getName().length() > nerItem.getInfoItem().getGroup().length()
 			? nerItem.getInfoItem().getName()
@@ -114,17 +105,17 @@ class NERSourcesPanel extends JPanel
 	private void buildPanel(List<NERProductionRecipe> recipes, List<NERDropSource> dropSources, List<NERShop> shops, List<NERSpawnItem> spawns)
 	{
 		GridBagConstraints containerGbc = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
-		JPanel recipeSection = createSection(SectionType.RECIPES, recipes, dropSources, shops, spawns);
+		JPanel recipeSection = createSection(SourceSectionType.RECIPES, recipes, dropSources, shops, spawns);
 		JPanel container = new JPanel(new GridBagLayout());
 		container.add(recipeSection, containerGbc);
 		containerGbc.gridy++;
-		JPanel dropsSection = createSection(SectionType.DROPS, recipes, dropSources, shops, spawns);
+		JPanel dropsSection = createSection(SourceSectionType.DROPS, recipes, dropSources, shops, spawns);
 		container.add(dropsSection, containerGbc);
 		containerGbc.gridy++;
-		JPanel shopsSection = createSection(SectionType.SHOPS, recipes, dropSources, shops, spawns);
+		JPanel shopsSection = createSection(SourceSectionType.SHOPS, recipes, dropSources, shops, spawns);
 		container.add(shopsSection, containerGbc);
 		containerGbc.gridy++;
-		JPanel spawnsSection = createSection(SectionType.SPAWNS, recipes, dropSources, shops, spawns);
+		JPanel spawnsSection = createSection(SourceSectionType.SPAWNS, recipes, dropSources, shops, spawns);
 		container.add(spawnsSection, containerGbc);
 		containerGbc.gridy++;
 
@@ -144,7 +135,7 @@ class NERSourcesPanel extends JPanel
 		revalidate();
 	}
 
-	private JPanel createSection(SectionType sectionType, List<NERProductionRecipe> recipes, List<NERDropSource> dropSources, List<NERShop> shops, List<NERSpawnItem> spawns)
+	private JPanel createSection(SourceSectionType sectionType, List<NERProductionRecipe> recipes, List<NERDropSource> dropSources, List<NERShop> shops, List<NERSpawnItem> spawns)
 	{
 		ArrayList<JPanel> sectionItems = new ArrayList<>();
 		switch (sectionType)
@@ -235,6 +226,10 @@ class NERSourcesPanel extends JPanel
 		sectionHeader.addMouseListener(sectionAdapter);
 
 		sectionItems.forEach(sectionContents::add);
+
+		if (config.defaultOpenSources().contains(DefaultOpenSources.of(sectionType))) {
+			toggleSection(sectionToggle, sectionContents);
+		}
 
 		return section;
 	}

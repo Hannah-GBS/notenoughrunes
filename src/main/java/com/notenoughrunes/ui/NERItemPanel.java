@@ -1,5 +1,6 @@
 package com.notenoughrunes.ui;
 
+import com.notenoughrunes.NotEnoughRunesConfig;
 import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.types.NERInfoItem;
 import java.awt.BorderLayout;
@@ -58,11 +59,11 @@ class NERItemPanel extends JPanel
 	private final ItemManager itemManager;
 
 
-	NERItemPanel(NERItem item, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel)
+	NERItemPanel(NERItem item, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel, NotEnoughRunesConfig config)
 	{
 		this.item = item;
-		this.sourcesPanel = new NERSourcesPanel(item, itemManager, dataProvider, clientThread, mainPanel);
-		this.usesPanel = new NERUsesPanel(item, itemManager, dataProvider, clientThread, mainPanel);
+		this.sourcesPanel = new NERSourcesPanel(item, itemManager, dataProvider, clientThread, mainPanel, config);
+		this.usesPanel = new NERUsesPanel(item, itemManager, dataProvider, clientThread, mainPanel, config);
 		this.clientThread = clientThread;
 		this.itemManager = itemManager;
 
