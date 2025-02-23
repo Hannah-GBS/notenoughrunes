@@ -19,6 +19,7 @@ import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.events.MenuOpened;
+import net.runelite.api.widgets.ComponentID;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
@@ -104,34 +105,55 @@ public class NotEnoughRunesPlugin extends Plugin
 	public void onMenuOpened(final MenuOpened event)
 	{
 		final MenuEntry[] entries = event.getMenuEntries();
-		for (int idx = entries.length - 1; idx >= 0; --idx)
+		for (int idx = 0; idx < entries.length; idx++)
 		{
 			final MenuEntry entry = entries[idx];
 			final Widget w = entry.getWidget();
 
-			boolean shouldAddInv = w != null && (WidgetUtil.componentToInterface(w.getId()) == InterfaceID.INVENTORY
-					|| WidgetUtil.componentToInterface(w.getId()) == InterfaceID.BANK_INVENTORY)
-				&& config.invLookupMode() != MenuLookupMode.DISABLED
-					&& !(config.invLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
+			if (w == null) continue;
 
-			boolean shouldAddBank = w != null && WidgetUtil.componentToInterface(w.getId()) == InterfaceID.BANK
+			final int group = WidgetUtil.componentToInterface(w.getId());
+
+			boolean shouldAddInv = (group == InterfaceID.INVENTORY
+					|| group == InterfaceID.EQUIPMENT_INVENTORY
+					|| group == InterfaceID.BANK_INVENTORY
+					|| group == InterfaceID.GROUP_STORAGE_INVENTORY)
+				&& config.invLookupMode() != MenuLookupMode.DISABLED
+				&& !(config.invLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
+
+			boolean shouldAddEquip = (group == InterfaceID.EQUIPMENT
+					|| group == InterfaceID.EQUIPMENT_BONUSES
+					|| (group == InterfaceID.BANK && w.getParentId() == ComponentID.BANK_EQUIPMENT_PARENT))
+				&& config.equipLookupMode() != MenuLookupMode.DISABLED
+				&& !(config.equipLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
+
+			boolean shouldAddBank = ((group == InterfaceID.BANK	&& w.getParentId() == ComponentID.BANK_ITEM_CONTAINER)
+					|| group == InterfaceID.GROUP_STORAGE)
 				&& config.bankLookupMode() != MenuLookupMode.DISABLED
 				&& !(config.bankLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
 
-			if (w != null && (shouldAddInv || shouldAddBank)
+			if ((shouldAddInv || shouldAddEquip || shouldAddBank)
 				&& "Examine".equals(entry.getOption()) && entry.getIdentifier() == 10)
 			{
-				final int itemId = w.getItemId();
-				client.createMenuEntry(idx)
+				int itemId = w.getItemId();
+				if (shouldAddEquip) {
+					final Widget widgetItem = w.getChild(1);
+					if (widgetItem != null) {
+						itemId = widgetItem.getItemId();
+					}
+				}
+
+				int finalItemId = itemId;
+				client.getMenu().createMenuEntry(idx)
 					.setOption("NER Lookup")
 					.setTarget(entry.getTarget())
 					.setType(MenuAction.RUNELITE)
 					.onClick(e ->
 					{
-						nerPanel.displayItemById(itemId);
+						nerPanel.displayItemById(finalItemId);
 						SwingUtilities.invokeLater(() -> clientToolbar.openPanel(navButton));
-
 					});
+				return;
 			}
 		}
 

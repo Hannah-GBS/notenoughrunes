@@ -24,10 +24,20 @@ public interface NotEnoughRunesConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "equipLookupMode",
+		name = "Equipment Lookup",
+		description = "Whether to show a NER Lookup option on equipped items, and when",
+		position = 1
+	)
+	default MenuLookupMode equipLookupMode() {
+		return MenuLookupMode.RIGHT;
+	}
+
+	@ConfigItem(
 		keyName = "bankLookupMode",
 		name = "Bank Lookup",
 		description = "Whether to show a NER Lookup option on bank items, and when",
-		position = 1
+		position = 2
 	)
 	default MenuLookupMode bankLookupMode()
 	{
@@ -38,7 +48,7 @@ public interface NotEnoughRunesConfig extends Config
 		keyName = "defaultOpenSources",
 		name = "Default Open Sources",
 		description = "Which 'Sources' categories to open by default",
-		position = 2
+		position = 3
 	)
 	default Set<DefaultOpenSources> defaultOpenSources() {
 		return Collections.emptySet();
@@ -48,7 +58,7 @@ public interface NotEnoughRunesConfig extends Config
 		keyName = "defaultOpenUses",
 		name = "Default Open Uses",
 		description = "Which 'Uses' categories to open by default",
-		position = 2
+		position = 4
 	)
 	default Set<DefaultOpenUses> defaultOpenUses() {
 		return Collections.emptySet();
