@@ -135,6 +135,13 @@ public class NERPanel extends PluginPanel
 		});
 	}
 
+	public void searchItemName(String itemName) {
+		SwingUtilities.invokeLater(() -> {
+			searchBar.setText(itemName);
+			itemSearch();
+		});
+	}
+
 	void getNerItem(NERInfoItem itemInfo)
 	{
 		clientThread.invokeLater(() ->

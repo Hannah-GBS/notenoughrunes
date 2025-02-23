@@ -7,6 +7,7 @@ import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.ui.NERPanel;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
@@ -23,7 +24,9 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.RuneLite;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.PluginMessage;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -46,7 +49,6 @@ public class NotEnoughRunesPlugin extends Plugin
 
 	@Inject
 	private NotEnoughRunesConfig config;
-
 
 	@Inject
 	private ClientToolbar clientToolbar;
@@ -133,6 +135,36 @@ public class NotEnoughRunesPlugin extends Plugin
 			}
 		}
 
+	}
+
+	@Subscribe
+	public void onPluginMessage(PluginMessage event) {
+		if (!event.getNamespace().equals("notenoughrunes")) {
+			return;
+		}
+
+		Map<String, Object> data = event.getData();
+
+		if (event.getName().equals("displayItemById")) {
+			Object itemId = data.getOrDefault("itemId", null);
+
+			if (itemId instanceof Integer) {
+				nerPanel.displayItemById((int) itemId);
+				SwingUtilities.invokeLater(() -> clientToolbar.openPanel(navButton));
+			} else {
+				log.error("Invalid type sent to displayItemById event, expected Integer");
+			}
+		}
+		else if (event.getName().equals("searchItemName")) {
+			Object itemName = data.getOrDefault("itemName", null);
+
+			if (itemName instanceof String) {
+				nerPanel.searchItemName((String) itemName);
+				SwingUtilities.invokeLater(() -> clientToolbar.openPanel(navButton));
+			} else {
+				log.error("Invalid type sent to searchItemName event, expected String");
+			}
+		}
 	}
 
 	@Provides
