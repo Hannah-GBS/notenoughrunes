@@ -89,6 +89,7 @@ public class NotEnoughRunesPlugin extends Plugin
 	static final Pattern COLLECTION_LOG_REGEX = Pattern.compile(".* received a new collection log item: (.*) \\(\\d+/\\d+\\)");
 	static final Pattern RAID_LOOT_REGEX = Pattern.compile(".* received special loot from a raid: (.*)\\.");
 	static final Pattern DROP_REGEX = Pattern.compile(".* received a drop: (?:[\\d,]* x )*(.+?)(?: \\([\\d,]+ coins\\))*\\.");
+	static final Pattern CLUE_REGEX = Pattern.compile(".* received a clue item: (?:[\\d,]* x )*(.+?)(?: \\([\\d,]+ coins\\))*\\.");
 
 
 	@Override
@@ -291,7 +292,7 @@ public class NotEnoughRunesPlugin extends Plugin
 
 				if (messageWidget.isHidden())
 				{
-					return;
+					continue;
 				}
 
 				String message = Text.removeTags(messageWidget.getText());
@@ -319,6 +320,15 @@ public class NotEnoughRunesPlugin extends Plugin
 				{
 					String item = dropMatcher.group(1);
 //					log.info("matched loot drop: {}", item);
+					addChatMenuEntry(messageWidget, item);
+					continue;
+				}
+
+				Matcher clueMatcher = CLUE_REGEX.matcher(message);
+				if (clueMatcher.find())
+				{
+					String item = clueMatcher.group(1);
+//					log.info("matched clue item: {}", item);
 					addChatMenuEntry(messageWidget, item);
 				}
 
