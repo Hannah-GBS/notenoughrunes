@@ -28,7 +28,7 @@ dependencies {
 }
 
 group = 'com.notenoughrunes'
-version = '1.6'
+version = '1.7'
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
@@ -38,7 +38,7 @@ tasks.withType(JavaCompile).configureEach {
 tasks.register('shadowJar', Jar) {
     dependsOn configurations.testRuntimeClasspath
     manifest {
-        attributes('Main-Class': 'com.example.ExamplePluginTest', 'Multi-Release': true)
+        attributes('Main-Class': 'com.notenoughrunes.NotEnoughRunesPluginTest', 'Multi-Release': true)
     }
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
