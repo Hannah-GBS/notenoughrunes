@@ -31,8 +31,10 @@ import net.runelite.api.widgets.JavaScriptCallback;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.RuneLite;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.PluginMessage;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -60,6 +62,9 @@ public class NotEnoughRunesPlugin extends Plugin
 
 	@Inject
 	private ClientToolbar clientToolbar;
+
+	@Inject
+	private ClientThread clientThread;
 
 	@Inject
 	private Gson gson;
@@ -233,7 +238,7 @@ public class NotEnoughRunesPlugin extends Plugin
 	@Subscribe
 	public void onScriptPostFired(ScriptPostFired event)
 	{
-		if (event.getScriptId() == SCRIPT_REBUILD_CHATBOX)
+		if (event.getScriptId() == SCRIPT_REBUILD_CHATBOX && config.ccBroadcastLookup())
 		{
 			matchMessages();
 		}
@@ -244,6 +249,20 @@ public class NotEnoughRunesPlugin extends Plugin
 		if (event.getCommand().equals("nerlookup")) {
 			var itemId = event.getArguments()[0];
 			nerPanel.displayItemById(Integer.parseInt(itemId));
+		}
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event) {
+		if (event.getGroup().equals("notenoughrunes")) {
+			if (config.ccBroadcastLookup())
+			{
+				clientThread.invoke(this::matchMessages);
+			}
+			else
+			{
+				clientThread.invoke(this::cleanUpWidgets);
+			}
 		}
 	}
 

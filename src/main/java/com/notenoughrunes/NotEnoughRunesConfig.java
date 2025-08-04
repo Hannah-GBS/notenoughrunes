@@ -55,10 +55,20 @@ public interface NotEnoughRunesConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "ccBroadcastLookup",
+		name = "Chat Broadcast Lookups",
+		description = "Whether to show a NER Lookup option on clan chat loot drop broadcasts",
+		position = 4
+	)
+	default boolean ccBroadcastLookup() {
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "defaultOpenSources",
 		name = "Default Open Sources",
 		description = "Which 'Sources' categories to open by default",
-		position = 4
+		position = 5
 	)
 	default Set<DefaultOpenSources> defaultOpenSources() {
 		return Collections.emptySet();
@@ -68,7 +78,7 @@ public interface NotEnoughRunesConfig extends Config
 		keyName = "defaultOpenUses",
 		name = "Default Open Uses",
 		description = "Which 'Uses' categories to open by default",
-		position = 5
+		position = 6
 	)
 	default Set<DefaultOpenUses> defaultOpenUses() {
 		return Collections.emptySet();
