@@ -21,8 +21,9 @@ import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.events.MenuOpened;
-import net.runelite.api.widgets.ComponentID;
-import net.runelite.api.widgets.InterfaceID;
+import net.runelite.api.events.ScriptPostFired;
+import net.runelite.api.gameval.InterfaceID;
+import net.runelite.api.widgets.JavaScriptCallback;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.RuneLite;
@@ -122,24 +123,24 @@ public class NotEnoughRunesPlugin extends Plugin
 			final int group = WidgetUtil.componentToInterface(w.getId());
 
 			boolean shouldAddInv = (group == InterfaceID.INVENTORY
-					|| group == InterfaceID.EQUIPMENT_INVENTORY
-					|| group == InterfaceID.BANK_INVENTORY
-					|| group == InterfaceID.GROUP_STORAGE_INVENTORY)
+					|| group == InterfaceID.EQUIPMENT_SIDE
+					|| group == InterfaceID.BANKSIDE
+					|| group == InterfaceID.SHARED_BANK_SIDE)
 				&& config.invLookupMode() != MenuLookupMode.DISABLED
 				&& !(config.invLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
 
-			boolean shouldAddEquip = (group == InterfaceID.EQUIPMENT
-					|| group == InterfaceID.EQUIPMENT_BONUSES
-					|| (group == InterfaceID.BANK && w.getParentId() == ComponentID.BANK_EQUIPMENT_PARENT))
+			boolean shouldAddEquip = (group == InterfaceID.WORNITEMS
+					|| group == InterfaceID.EQUIPMENT
+					|| (group == InterfaceID.BANKMAIN && w.getParentId() == InterfaceID.Bankmain.WORNITEMS_CONTAINER))
 				&& config.equipLookupMode() != MenuLookupMode.DISABLED
 				&& !(config.equipLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
 
-			boolean shouldAddBank = ((group == InterfaceID.BANK	&& w.getParentId() == ComponentID.BANK_ITEM_CONTAINER)
-					|| group == InterfaceID.GROUP_STORAGE)
+			boolean shouldAddBank = ((group == InterfaceID.BANKMAIN	&& w.getParentId() == InterfaceID.Bankmain.ITEMS)
+					|| group == InterfaceID.SHARED_BANK)
 				&& config.bankLookupMode() != MenuLookupMode.DISABLED
 				&& !(config.bankLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
 
-			boolean shouldAddClog = (group == InterfaceID.COLLECTION_LOG && w.getParentId() == 40697893) // Don't show on search
+			boolean shouldAddClog = (group == InterfaceID.COLLECTION && w.getParentId() == InterfaceID.Collection.ITEMS_CONTENTS) // Don't show on search
 				&& config.clogLookupMode() != MenuLookupMode.DISABLED
 				&& !(config.clogLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
 
