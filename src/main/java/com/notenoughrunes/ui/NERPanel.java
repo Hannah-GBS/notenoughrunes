@@ -117,6 +117,30 @@ public class NERPanel extends PluginPanel
 		searchBar.setEditable(true);
 	}
 
+	private void itemSearchFirst()
+	{
+		if (Strings.isNullOrEmpty(searchBar.getText()))
+		{
+			updateSearch();
+			return;
+		}
+
+		if (itemPanel != null)
+		{
+			remove(itemPanel);
+			SwingUtilities.invokeLater(() ->
+			{
+//				prevItemPanel = new NERItemPanel(itemPanel.item, itemManager, nerData, clientThread, this);
+				this.updateUI();
+				itemPanel = null;
+			});
+		}
+		currentPanel = searchResultsPanel;
+		add(searchResultsPanel);
+		searchResultsPanel.itemSearchFirst(searchBar);
+		searchBar.setEditable(true);
+	}
+
 	void displayItem(NERItem item)
 	{
 		itemPanel = new NERItemPanel(item, itemManager, dataProvider, clientThread, this, config);
@@ -139,6 +163,14 @@ public class NERPanel extends PluginPanel
 		SwingUtilities.invokeLater(() -> {
 			searchBar.setText(itemName);
 			itemSearch();
+		});
+	}
+
+	public void searchItemNameAndDisplay(String itemName) {
+		SwingUtilities.invokeLater(() -> {
+			searchBar.setText(itemName);
+			itemSearchFirst();
+
 		});
 	}
 

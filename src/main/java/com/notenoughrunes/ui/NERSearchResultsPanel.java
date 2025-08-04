@@ -165,6 +165,54 @@ class NERSearchResultsPanel extends JPanel
 			}));
 	}
 
+	void itemSearchFirst(IconTextField searchBar)
+	{
+		if (!updateSearch(searchBar))
+		{
+			return;
+		}
+
+		String search = searchBar.getText();
+		results.clear();
+
+		this.dataProvider.executeMany(new SearchItemsQuery(search), searchResults ->
+			this.clientThread.invokeLater(() ->
+			{
+				searchResults.forEach((itemInfo) ->
+				{
+					AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
+					results.add(new NERItem(itemImage, itemInfo));
+				});
+
+				if (results.isEmpty())
+				{
+					searchBar.setIcon(IconTextField.Icon.ERROR);
+					errorPanel.setContent("No results found", "No items were found with that name, please try again.");
+					cardLayout.show(centerPanel, ERROR_PANEL);
+					searchBar.setEditable(true);
+					return;
+				}
+
+				results = results.stream()
+					.sorted(compareNameAndGroup(search))
+					.collect(Collectors.toList());
+
+				SwingUtilities.invokeLater(this::showFirstResult);
+				searchBar.setIcon(IconTextField.Icon.SEARCH);
+			}));
+	}
+
+	void showFirstResult()
+	{
+		if (results.isEmpty())
+		{
+			return;
+		}
+
+		NERItem item = results.get(0);
+		parentPanel.displayItem(item);
+	}
+
 	void processResult()
 	{
 

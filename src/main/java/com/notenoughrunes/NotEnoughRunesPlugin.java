@@ -8,7 +8,10 @@ import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.ui.NERPanel;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
 import lombok.AccessLevel;
@@ -20,6 +23,7 @@ import net.runelite.api.EnumComposition;
 import net.runelite.api.KeyCode;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
+import net.runelite.api.events.CommandExecuted;
 import net.runelite.api.events.MenuOpened;
 import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.gameval.InterfaceID;
@@ -28,7 +32,6 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetUtil;
 import net.runelite.client.RuneLite;
 import net.runelite.client.config.ConfigManager;
-import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.PluginMessage;
 import net.runelite.client.plugins.Plugin;
@@ -36,6 +39,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.client.util.Text;
 
 @Slf4j
 @PluginDescriptor(
@@ -75,6 +79,13 @@ public class NotEnoughRunesPlugin extends Plugin
 		.put(25615, 21539) // Large water container
 		.build();
 
+	public static final int SCRIPT_REBUILD_CHATBOX = 84;
+	public static final int VARC_INT_CHAT_TAB = 41;
+	static final Pattern COLLECTION_LOG_REGEX = Pattern.compile(".* received a new collection log item: (.*) \\(\\d+/\\d+\\)");
+	static final Pattern RAID_LOOT_REGEX = Pattern.compile(".* received special loot from a raid: (.*)\\.");
+	static final Pattern DROP_REGEX = Pattern.compile(".* received a drop: (?:[\\d,]* x )*(.+?)(?: \\([\\d,]+ coins\\))*\\.");
+
+
 	@Override
 	protected void startUp() throws Exception
 	{
@@ -107,6 +118,7 @@ public class NotEnoughRunesPlugin extends Plugin
 	{
 		nerPanel = null;
 		clientToolbar.removeNavigation(navButton);
+		cleanUpWidgets();
 	}
 
 	@Subscribe
@@ -217,6 +229,144 @@ public class NotEnoughRunesPlugin extends Plugin
 			}
 		}
 	}
+
+	@Subscribe
+	public void onScriptPostFired(ScriptPostFired event)
+	{
+		if (event.getScriptId() == SCRIPT_REBUILD_CHATBOX)
+		{
+			matchMessages();
+		}
+	}
+
+	@Subscribe
+	public void onCommandExecuted(CommandExecuted event) {
+		if (event.getCommand().equals("nerlookup")) {
+			var itemId = event.getArguments()[0];
+			nerPanel.displayItemById(Integer.parseInt(itemId));
+		}
+	}
+
+	private void matchMessages()
+	{
+		Widget chatbox = client.getWidget(InterfaceID.Chatbox.SCROLLAREA);
+		int selectedChatTab = client.getVarcIntValue(VARC_INT_CHAT_TAB);
+
+		if (chatbox != null && selectedChatTab != 1337) // 1337 = closed
+		{
+			Widget[] chatWidgets = chatbox.getDynamicChildren();
+
+			for (int i = 2; i < chatWidgets.length; i = i + 4)
+			{
+				int messageWidgetIndex = i - 1; // [1]
+
+				Widget messageWidget = chatWidgets[messageWidgetIndex];
+
+				// clean widgets first
+				removeChatMenuEntry(messageWidget);
+
+//				if (messageWidgetIndex == 1 && messageWidget.getText().contains("To talk in your clan's channel"))
+//				{
+//					addChatMenuEntry(messageWidget, "test");
+//				}
+
+				if (messageWidget.isHidden())
+				{
+					return;
+				}
+
+				String message = Text.removeTags(messageWidget.getText());
+
+				Matcher collMatcher = COLLECTION_LOG_REGEX.matcher(message);
+				if (collMatcher.find())
+				{
+					String item = collMatcher.group(1);
+//					log.info("matched collection log: {}", item);
+					addChatMenuEntry(messageWidget, item);
+					continue;
+				}
+
+				Matcher raidMatcher = RAID_LOOT_REGEX.matcher(message);
+				if (raidMatcher.find())
+				{
+					String item = raidMatcher.group(1);
+//					log.info("matched raid drop: {}", item);
+					addChatMenuEntry(messageWidget, item);
+					continue;
+				}
+
+				Matcher dropMatcher = DROP_REGEX.matcher(message);
+				if (dropMatcher.find())
+				{
+					String item = dropMatcher.group(1);
+//					log.info("matched loot drop: {}", item);
+					addChatMenuEntry(messageWidget, item);
+				}
+
+			}
+
+		}
+	}
+
+	private void cleanUpWidgets()
+	{
+		Widget chatbox = client.getWidget(InterfaceID.Chatbox.SCROLLAREA);
+		int selectedChatTab = client.getVarcIntValue(VARC_INT_CHAT_TAB);
+
+		if (chatbox != null && selectedChatTab != 1337) // 1337 = closed
+		{
+			Widget[] chatWidgets = chatbox.getDynamicChildren();
+
+			for (int i = 2; i < chatWidgets.length; i = i + 4)
+			{
+				int messageWidgetIndex = i - 1; // [1]
+
+				Widget messageWidget = chatWidgets[messageWidgetIndex];
+
+				// clean widgets first
+				removeChatMenuEntry(messageWidget);
+			}
+		}
+	}
+
+
+	private void addChatMenuEntry(Widget messageWidget, String itemName)
+	{
+		messageWidget.setAction(7, "NER Lookup");
+		messageWidget.setHasListener(true);
+		messageWidget.setOnOpListener((JavaScriptCallback) (event) -> {
+			nerPanel.searchItemNameAndDisplay(itemName);
+			SwingUtilities.invokeLater(() -> clientToolbar.openPanel(navButton));
+		});
+		messageWidget.setName(itemName);
+	}
+
+	private void removeChatMenuEntry(Widget messageWidget)
+	{
+		messageWidget.setName("");
+		if (messageWidget.hasListener())
+		{
+			Object[] listeners = messageWidget.getOnOpListener();
+
+			if (listeners != null)
+			{
+				listeners = Arrays.stream(listeners)
+					.filter(listener -> !String.valueOf(listener).contains("com.notenoughrunes.NotEnoughRunesPlugin"))
+					.toArray();
+			}
+
+			if (listeners != null && listeners.length > 0)
+			{
+				messageWidget.setOnOpListener(listeners);
+			}
+			else
+			{
+				messageWidget.setOnOpListener((Object[]) null);
+				messageWidget.setHasListener(false);
+			}
+		}
+	}
+
 
 	@Provides
 	NotEnoughRunesConfig provideConfig(ConfigManager configManager)
