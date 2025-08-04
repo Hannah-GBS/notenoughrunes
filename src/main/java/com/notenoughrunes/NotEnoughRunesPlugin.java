@@ -276,11 +276,9 @@ public class NotEnoughRunesPlugin extends Plugin
 		{
 			Widget[] chatWidgets = chatbox.getDynamicChildren();
 
-			for (int i = 2; i < chatWidgets.length; i = i + 4)
+			for (int i = 1; i < chatWidgets.length; i = i + 4)
 			{
-				int messageWidgetIndex = i - 1; // [1]
-
-				Widget messageWidget = chatWidgets[messageWidgetIndex];
+				Widget messageWidget = chatWidgets[i];
 
 				// clean widgets first
 				removeChatMenuEntry(messageWidget);
@@ -346,11 +344,9 @@ public class NotEnoughRunesPlugin extends Plugin
 		{
 			Widget[] chatWidgets = chatbox.getDynamicChildren();
 
-			for (int i = 2; i < chatWidgets.length; i = i + 4)
+			for (int i = 1; i < chatWidgets.length; i = i + 4)
 			{
-				int messageWidgetIndex = i - 1; // [1]
-
-				Widget messageWidget = chatWidgets[messageWidgetIndex];
+				Widget messageWidget = chatWidgets[i];
 
 				// clean widgets first
 				removeChatMenuEntry(messageWidget);
