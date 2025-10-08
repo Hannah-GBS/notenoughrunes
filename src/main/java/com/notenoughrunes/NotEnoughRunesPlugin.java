@@ -163,7 +163,7 @@ public class NotEnoughRunesPlugin extends Plugin
 				&& !(config.clogLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
 
 			if (((shouldAddInv || shouldAddEquip || shouldAddBank)
-				&& "Examine".equals(entry.getOption()) && entry.getIdentifier() == 10)
+				&& "Examine".equals(entry.getOption()))
 				|| (shouldAddClog && "Check".equals(entry.getOption()) && entry.getIdentifier() == 1))
 			{
 				int itemId = w.getItemId();
