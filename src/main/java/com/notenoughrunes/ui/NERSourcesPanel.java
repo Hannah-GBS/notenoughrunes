@@ -36,8 +36,11 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Client;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.DynamicGridLayout;
 import net.runelite.client.ui.FontManager;
@@ -60,6 +63,9 @@ class NERSourcesPanel extends JPanel
 	private final H2DataProvider dataProvider;
 	private final ItemManager itemManager;
 	private final ClientThread clientThread;
+	private final Client client;
+	private final EventBus eventBus;
+	private final PluginManager pluginManager;
 	private final String useName;
 	private final NERPanel mainPanel;
 	private final NotEnoughRunesConfig config;
@@ -79,7 +85,7 @@ class NERSourcesPanel extends JPanel
 		SECTION_RETRACT_ICON_HOVER = new ImageIcon(ImageUtil.alphaOffset(sectionExpandIcon, -100));
 	}
 
-	NERSourcesPanel(NERItem nerItem, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel, NotEnoughRunesConfig config)
+	NERSourcesPanel(NERItem nerItem, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel, NotEnoughRunesConfig config, Client client, EventBus eventBus, PluginManager pluginManager)
 	{
 		this.nerItem = nerItem;
 		this.dataProvider = dataProvider;
@@ -87,6 +93,9 @@ class NERSourcesPanel extends JPanel
 		this.clientThread = clientThread;
 		this.mainPanel = mainPanel;
 		this.config = config;
+		this.client = client;
+		this.eventBus = eventBus;
+		this.pluginManager = pluginManager;
 
 		this.useName = nerItem.getInfoItem().getName().length() > nerItem.getInfoItem().getGroup().length()
 			? nerItem.getInfoItem().getName()
@@ -153,13 +162,13 @@ class NERSourcesPanel extends JPanel
 
 			case SHOPS:
 				if (!shops.isEmpty()) {
-					sectionItems.add(new NERShopsPanel(shops, nerItem, itemManager, clientThread, false, mainPanel));
+					sectionItems.add(new NERShopsPanel(shops, nerItem, itemManager, clientThread, false, mainPanel, client, eventBus, pluginManager));
 				}
 				break;
 
 			case SPAWNS:
 				spawns.forEach((spawnItem) ->
-						sectionItems.add(new NERSpawnPanel(spawnItem)));
+						sectionItems.add(new NERSpawnPanel(spawnItem, clientThread, client, eventBus, pluginManager)));
 //					.limit(MAX_ENTRIES)
 
 				break;

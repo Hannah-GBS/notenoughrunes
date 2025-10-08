@@ -28,8 +28,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Client;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.components.materialtabs.MaterialTab;
@@ -59,11 +62,11 @@ class NERItemPanel extends JPanel
 	private final ItemManager itemManager;
 
 
-	NERItemPanel(NERItem item, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel, NotEnoughRunesConfig config)
+	NERItemPanel(NERItem item, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel, NotEnoughRunesConfig config, Client client, EventBus eventBus, PluginManager pluginManager)
 	{
 		this.item = item;
-		this.sourcesPanel = new NERSourcesPanel(item, itemManager, dataProvider, clientThread, mainPanel, config);
-		this.usesPanel = new NERUsesPanel(item, itemManager, dataProvider, clientThread, mainPanel, config);
+		this.sourcesPanel = new NERSourcesPanel(item, itemManager, dataProvider, clientThread, mainPanel, config, client, eventBus, pluginManager);
+		this.usesPanel = new NERUsesPanel(item, itemManager, dataProvider, clientThread, mainPanel, config, client, eventBus, pluginManager);
 		this.clientThread = clientThread;
 		this.itemManager = itemManager;
 

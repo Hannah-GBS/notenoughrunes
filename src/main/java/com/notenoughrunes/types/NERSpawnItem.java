@@ -12,4 +12,6 @@ public class NERSpawnItem
 	private final String coords;
 	private final String location;
 	private final boolean isMembers;
+	private final String plane;
+	private final String mapID;
 }

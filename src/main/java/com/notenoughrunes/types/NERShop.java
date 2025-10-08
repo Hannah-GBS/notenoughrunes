@@ -12,5 +12,8 @@ public class NERShop
 	private final String sellMultiplier;
 	private final String location;
 	private final boolean isMembers;
+	private final String coords;
+	private final String plane;
+	private final String mapID;
 	private final List<NERShopItem> items;
 }

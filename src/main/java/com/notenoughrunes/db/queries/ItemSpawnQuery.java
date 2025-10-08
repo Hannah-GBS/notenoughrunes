@@ -41,7 +41,9 @@ public class ItemSpawnQuery extends ModeledQuery<NERSpawnItem>
 				rs.getString("NAME"),
 				rs.getString("COORDS"),
 				rs.getString("LOCATION"),
-				rs.getBoolean("IS_MEMBERS")
+				rs.getBoolean("IS_MEMBERS"),
+				rs.getString("PLANE"),
+				rs.getString("MAP_ID")
 			);
 		}
 		finally

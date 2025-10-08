@@ -15,8 +15,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Client;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
@@ -30,6 +33,9 @@ public class NERPanel extends PluginPanel
 	private final ItemManager itemManager;
 	private final H2DataProvider dataProvider;
 	private final NotEnoughRunesConfig config;
+	private final Client client;
+	private final EventBus eventBus;
+	private final PluginManager pluginManager;
 
 	public final static int MAX_ENTRIES = 100;
 
@@ -48,7 +54,10 @@ public class NERPanel extends PluginPanel
 		ItemManager itemManager,
 		H2DataProvider dataProvider,
 		ScheduledExecutorService executor,
-		NotEnoughRunesConfig config
+		NotEnoughRunesConfig config,
+		Client client,
+		EventBus eventBus,
+		PluginManager pluginManager
 	)
 	{
 		super(false);
@@ -57,6 +66,9 @@ public class NERPanel extends PluginPanel
 		this.itemManager = itemManager;
 		this.dataProvider = dataProvider;
 		this.config = config;
+		this.client = client;
+		this.eventBus = eventBus;
+		this.pluginManager = pluginManager;
 
 		setLayout(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
@@ -143,7 +155,7 @@ public class NERPanel extends PluginPanel
 
 	void displayItem(NERItem item)
 	{
-		itemPanel = new NERItemPanel(item, itemManager, dataProvider, clientThread, this, config);
+		itemPanel = new NERItemPanel(item, itemManager, dataProvider, clientThread, this, config, client, eventBus, pluginManager);
 		remove(currentPanel);
 		currentPanel = itemPanel;
 		add(itemPanel, BorderLayout.CENTER);

@@ -44,6 +44,9 @@ public class ItemSoldAtQuery extends ModeledQuery<NERShop>
 			rs.getString("SELL_MULTIPLIER"),
 			rs.getString("LOCATION"),
 			rs.getBoolean("IS_MEMBERS"),
+			rs.getString("COORDS"),
+			rs.getString("PLANE"),
+			rs.getString("MAP_ID"),
 			new ArrayList<>()
 		);
 
