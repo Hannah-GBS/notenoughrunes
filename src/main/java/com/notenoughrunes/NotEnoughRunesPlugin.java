@@ -21,10 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.EnumComposition;
 import net.runelite.api.KeyCode;
+import net.runelite.api.Menu;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.events.CommandExecuted;
-import net.runelite.api.events.MenuOpened;
+import net.runelite.api.events.MenuEntryAdded;
 import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.widgets.JavaScriptCallback;
@@ -128,82 +129,77 @@ public class NotEnoughRunesPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onMenuOpened(final MenuOpened event)
+	public void onMenuEntryAdded(final MenuEntryAdded event)
 	{
-		final MenuEntry[] entries = event.getMenuEntries();
-		for (int idx = 0; idx < entries.length; idx++)
+		final Menu menu = client.getMenu();
+		final MenuEntry entry = event.getMenuEntry();
+		final Widget w = entry.getWidget();
+
+		if (w == null) return;
+
+		final int group = WidgetUtil.componentToInterface(w.getId());
+
+		boolean shouldAddInv = (group == InterfaceID.INVENTORY
+			|| group == InterfaceID.EQUIPMENT_SIDE
+			|| group == InterfaceID.BANKSIDE
+			|| group == InterfaceID.SHARED_BANK_SIDE)
+			&& config.invLookupMode() != MenuLookupMode.DISABLED
+			&& !(config.invLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
+
+		boolean shouldAddEquip = (group == InterfaceID.WORNITEMS
+			|| group == InterfaceID.EQUIPMENT
+			|| (group == InterfaceID.BANKMAIN && w.getParentId() == InterfaceID.Bankmain.WORNITEMS_CONTAINER))
+			&& config.equipLookupMode() != MenuLookupMode.DISABLED
+			&& !(config.equipLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
+
+		boolean shouldAddBank = ((group == InterfaceID.BANKMAIN	&& w.getParentId() == InterfaceID.Bankmain.ITEMS)
+			|| group == InterfaceID.SHARED_BANK)
+			&& config.bankLookupMode() != MenuLookupMode.DISABLED
+			&& !(config.bankLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
+
+		boolean shouldAddClog = (group == InterfaceID.COLLECTION && w.getParentId() == InterfaceID.Collection.ITEMS_CONTENTS) // Don't show on search
+			&& config.clogLookupMode() != MenuLookupMode.DISABLED
+			&& !(config.clogLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
+
+		if (((shouldAddInv || shouldAddEquip || shouldAddBank)
+			&& "Examine".equals(entry.getOption()))
+			|| (shouldAddClog && "Check".equals(entry.getOption()) && entry.getIdentifier() == 1))
 		{
-			final MenuEntry entry = entries[idx];
-			final Widget w = entry.getWidget();
-
-			if (w == null) continue;
-
-			final int group = WidgetUtil.componentToInterface(w.getId());
-
-			boolean shouldAddInv = (group == InterfaceID.INVENTORY
-					|| group == InterfaceID.EQUIPMENT_SIDE
-					|| group == InterfaceID.BANKSIDE
-					|| group == InterfaceID.SHARED_BANK_SIDE)
-				&& config.invLookupMode() != MenuLookupMode.DISABLED
-				&& !(config.invLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
-
-			boolean shouldAddEquip = (group == InterfaceID.WORNITEMS
-					|| group == InterfaceID.EQUIPMENT
-					|| (group == InterfaceID.BANKMAIN && w.getParentId() == InterfaceID.Bankmain.WORNITEMS_CONTAINER))
-				&& config.equipLookupMode() != MenuLookupMode.DISABLED
-				&& !(config.equipLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
-
-			boolean shouldAddBank = ((group == InterfaceID.BANKMAIN	&& w.getParentId() == InterfaceID.Bankmain.ITEMS)
-					|| group == InterfaceID.SHARED_BANK)
-				&& config.bankLookupMode() != MenuLookupMode.DISABLED
-				&& !(config.bankLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
-
-			boolean shouldAddClog = (group == InterfaceID.COLLECTION && w.getParentId() == InterfaceID.Collection.ITEMS_CONTENTS) // Don't show on search
-				&& config.clogLookupMode() != MenuLookupMode.DISABLED
-				&& !(config.clogLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
-
-			if (((shouldAddInv || shouldAddEquip || shouldAddBank)
-				&& "Examine".equals(entry.getOption()))
-				|| (shouldAddClog && "Check".equals(entry.getOption()) && entry.getIdentifier() == 1))
-			{
-				int itemId = w.getItemId();
-				if (shouldAddEquip) {
-					final Widget widgetItem = w.getChild(1);
-					if (widgetItem != null) {
-						itemId = widgetItem.getItemId();
-					}
+			int itemId = w.getItemId();
+			if (shouldAddEquip) {
+				final Widget widgetItem = w.getChild(1);
+				if (widgetItem != null) {
+					itemId = widgetItem.getItemId();
 				}
-
-				// Handle items with different IDs in the log than in inventories
-				if (shouldAddClog) {
-					final EnumComposition itemMapEnum = client.getEnum(3721);
-					int[] keys = itemMapEnum.getKeys();
-					int[] values = itemMapEnum.getIntVals();
-					for (int i = 0; i < values.length; i++){
-						if (values[i] == itemId) {
-							itemId = keys[i];
-						}
-					}
-
-					if (ITEM_ID_MAP.containsKey(itemId)) {
-						itemId = ITEM_ID_MAP.get(itemId);
-					}
-				}
-
-				int finalItemId = itemId;
-				client.getMenu().createMenuEntry(idx)
-					.setOption("NER Lookup")
-					.setTarget(entry.getTarget())
-					.setType(MenuAction.RUNELITE)
-					.onClick(e ->
-					{
-						nerPanel.displayItemById(finalItemId);
-						SwingUtilities.invokeLater(() -> clientToolbar.openPanel(navButton));
-					});
-				return;
 			}
-		}
 
+			// Handle items with different IDs in the log than in inventories
+			if (shouldAddClog) {
+				final EnumComposition itemMapEnum = client.getEnum(3721);
+				int[] keys = itemMapEnum.getKeys();
+				int[] values = itemMapEnum.getIntVals();
+				for (int i = 0; i < values.length; i++){
+					if (values[i] == itemId) {
+						itemId = keys[i];
+					}
+				}
+
+				if (ITEM_ID_MAP.containsKey(itemId)) {
+					itemId = ITEM_ID_MAP.get(itemId);
+				}
+			}
+
+			int finalItemId = itemId;
+			menu.createMenuEntry(-1)
+				.setOption("NER Lookup")
+				.setTarget(entry.getTarget())
+				.setType(MenuAction.RUNELITE)
+				.onClick(e ->
+				{
+					nerPanel.displayItemById(finalItemId);
+					SwingUtilities.invokeLater(() -> clientToolbar.openPanel(navButton));
+				});
+		}
 	}
 
 	@Subscribe
