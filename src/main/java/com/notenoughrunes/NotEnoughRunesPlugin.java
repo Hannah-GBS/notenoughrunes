@@ -88,7 +88,7 @@ public class NotEnoughRunesPlugin extends Plugin
 	public static final int SCRIPT_REBUILD_CHATBOX = 84;
 	public static final int VARC_INT_CHAT_TAB = 41;
 	static final Pattern COLLECTION_LOG_REGEX = Pattern.compile(".* received a new collection log item: (.*) \\(\\d+/\\d+\\)");
-	static final Pattern RAID_LOOT_REGEX = Pattern.compile(".* received special loot from a raid: (.*)\\.");
+	static final Pattern RAID_LOOT_REGEX = Pattern.compile(".* received special loot from a raid: (.+?)(?: \\([\\d,]+ coins\\)(?: .+)*)*\\.");
 	static final Pattern DROP_REGEX = Pattern.compile(".* received a drop: (?:[\\d,]* x )*(.+?)(?: \\([\\d,]+ coins\\)(?: .+)*)*\\.");
 	static final Pattern CLUE_REGEX = Pattern.compile(".* received a clue item: (?:[\\d,]* x )*(.+?)(?: \\([\\d,]+ coins\\))*\\.");
 
