@@ -21,6 +21,7 @@ public class NERInfoItem
 	private final String url;
 	private final boolean isMembers;
 	private final boolean isTradeable;
+	private final boolean isDefaultVersion;
 
 	public static NERInfoItem fromResultSet(ResultSet rs, boolean expand) throws SQLException
 	{
@@ -32,7 +33,8 @@ public class NERInfoItem
 			rs.getString("I.VERSION"),
 			rs.getString("I.URL"),
 			rs.getBoolean("I.IS_MEMBERS"),
-			rs.getBoolean("I.IS_TRADEABLE")
+			rs.getBoolean("I.IS_TRADEABLE"),
+			rs.getBoolean("I.IS_DEFAULT_VERSION")
 		);
 
 		return res;

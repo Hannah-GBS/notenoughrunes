@@ -1,5 +1,6 @@
 package com.notenoughrunes.ui;
 
+import com.notenoughrunes.NaturalOrderComparator;
 import com.notenoughrunes.NotEnoughRunesConfig;
 import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.types.NERInfoItem;
@@ -9,18 +10,26 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import static java.awt.GridBagConstraints.BOTH;
+import static java.awt.GridBagConstraints.CENTER;
 import static java.awt.GridBagConstraints.LINE_END;
 import static java.awt.GridBagConstraints.LINE_START;
 import static java.awt.GridBagConstraints.NONE;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -56,31 +65,42 @@ class NERItemPanel extends JPanel
 
 	@Getter
 	private final NERUsesPanel usesPanel;
-	public NERItem item;
+	public NERItem selectedItem;
 	private final ClientThread clientThread;
 
 	private final ItemManager itemManager;
 
 
-	NERItemPanel(NERItem item, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel, NotEnoughRunesConfig config, Client client, EventBus eventBus, PluginManager pluginManager)
+	NERItemPanel(NERItemGroup itemGroup, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel, NotEnoughRunesConfig config, Client client, EventBus eventBus, PluginManager pluginManager)
 	{
-		this.item = item;
-		this.sourcesPanel = new NERSourcesPanel(item, itemManager, dataProvider, clientThread, mainPanel, config, client, eventBus, pluginManager);
-		this.usesPanel = new NERUsesPanel(item, itemManager, dataProvider, clientThread, mainPanel, config, client, eventBus, pluginManager);
+		Optional<NERItem> searchedItemOpt = itemGroup.getItems().stream().filter((groupItem) -> Objects.equals(groupItem.getInfoItem().getVersion(), itemGroup.getSelectedVersion())).findFirst();
+		Optional<NERItem> defaultItemForGroup = itemGroup.getItems().stream().filter((groupItem) -> groupItem.getInfoItem().isDefaultVersion()).findFirst();
+		this.selectedItem = searchedItemOpt.orElseGet(() -> defaultItemForGroup.orElseGet(() -> itemGroup.getItems().get(0)));
+		log.debug(this.selectedItem.getInfoItem().getVersion());
+		this.sourcesPanel = new NERSourcesPanel(selectedItem, itemManager, dataProvider, clientThread, mainPanel, config, client, eventBus, pluginManager);
+		this.usesPanel = new NERUsesPanel(selectedItem, itemManager, dataProvider, clientThread, mainPanel, config, client, eventBus, pluginManager);
 		this.clientThread = clientThread;
 		this.itemManager = itemManager;
 
-		log.debug("Creating item panel: " + item.getInfoItem().getName());
+		log.debug("Creating item panel: " + selectedItem.getInfoItem().getName());
 
-		String useName = item.getInfoItem().getName().length() > item.getInfoItem().getGroup().length()
-			? item.getInfoItem().getName()
-			: item.getInfoItem().getGroup();
+//		String useName = selectedItem.getInfoItem().getName().length() > selectedItem.getInfoItem().getGroup().length()
+//			? selectedItem.getInfoItem().getName()
+//			: selectedItem.getInfoItem().getGroup();
+
+		String useName = selectedItem.getInfoItem().getName();
 
 		setLayout(new BorderLayout());
 		setBorder(new EmptyBorder(0, 0, 10, 0));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
-		JLabel itemIcon = new JLabel(new ImageIcon(item.getIcon()), SwingConstants.RIGHT);
+
+		List<String> versions = itemGroup.getItems().stream()
+			.map((groupItem) -> groupItem.getInfoItem().getVersion())
+			.distinct()
+			.collect(Collectors.toList());
+
+		JLabel itemIcon = new JLabel(new ImageIcon(selectedItem.getIcon()), SwingConstants.RIGHT);
 		itemIcon.setPreferredSize(ICON_SIZE);
 
 		JLabel wikiIcon = new JLabel(new ImageIcon(WIKI_ICON_DESELECTED));
@@ -90,7 +110,7 @@ class NERItemPanel extends JPanel
 			@Override
 			public void mouseClicked(MouseEvent mouseEvent)
 			{
-				LinkBrowser.browse(item.getInfoItem().getUrl());
+				LinkBrowser.browse(selectedItem.getInfoItem().getUrl());
 			}
 
 			@Override
@@ -120,6 +140,7 @@ class NERItemPanel extends JPanel
 		attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
 		itemNameLabel.setFont(FontManager.getRunescapeBoldFont().deriveFont(attributes).deriveFont(20f));
 		itemNameLabel.setText(useName);
+		itemNameLabel.setToolTipText(useName);
 		itemInfoRight.add(itemNameLabel, gbc);
 		gbc.gridy++;
 
@@ -128,7 +149,7 @@ class NERItemPanel extends JPanel
 		itemDesc.setFont(FontManager.getRunescapeSmallFont());
 		itemDesc.setHorizontalAlignment(JLabel.CENTER);
 		itemDesc.setVerticalAlignment(JLabel.TOP);
-		itemDesc.setText(String.format("<html><body style=\"text-justify: none; text-align: center; overflow: clip;\">%s</body></html>", item.getInfoItem().getExamineText()));
+		itemDesc.setText(String.format("<html><body style=\"text-justify: none; text-align: center; overflow: clip;\">%s</body></html>", selectedItem.getInfoItem().getExamineText()));
 		itemInfoRight.add(itemDesc, gbc);
 		gbc.gridy++;
 		itemInfoRight.setBackground(getBackground());
@@ -164,16 +185,36 @@ class NERItemPanel extends JPanel
 		itemHAPriceInfo.add(haLabel, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, LINE_START, NONE, new Insets(0, 0, 0, 0), 4, 4));
 		itemHAPriceInfo.add(haPriceLabel, new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, LINE_END, BOTH, new Insets(0, 0, 0, 0), 4, 4));
 
-		setItemPrices(item.getInfoItem(), itemGEPriceInfo, gePriceLabel, itemHAPriceInfo, haPriceLabel);
+		setItemPrices(selectedItem.getInfoItem(), itemGEPriceInfo, gePriceLabel, itemHAPriceInfo, haPriceLabel);
 
 		JPanel itemInfo = new JPanel();
 		itemInfo.setLayout(new GridBagLayout());
 		itemInfo.setBorder(new EmptyBorder(5, 5, 0, 0));
-		itemInfo.add(itemIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, LINE_START, NONE, new Insets(0, 0, 0, 0), 4, 4));
-		itemInfo.add(wikiIcon, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, LINE_START, NONE, new Insets(0, 0, 0, 0), 4, 10));
-		itemInfo.add(itemInfoRight, new GridBagConstraints(1, 0, 1, 2, 1.0, 0.0, LINE_END, BOTH, new Insets(0, 0, 0, 0), 4, 4));
-		itemInfo.add(itemGEPriceInfo, new GridBagConstraints(0, 2, 2, 1, 0.0, 0.0, LINE_START, BOTH, new Insets(0, 20, 0, 20), 4, 4));
-		itemInfo.add(itemHAPriceInfo, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0, LINE_START, BOTH, new Insets(0, 20, 0, 20), 4, 4));
+
+		if (versions.size() > 1) {
+			versions.sort(new NaturalOrderComparator());
+			String[] versionArr = versions.toArray(String[]::new);
+			JPanel versionsPanel = new JPanel(new GridBagLayout());
+			JComboBox<String> comboBox = new JComboBox<>(versionArr);
+			comboBox.setSelectedItem(itemGroup.getSelectedVersion());
+			comboBox.addItemListener(e ->
+			{
+				if (e.getStateChange() == ItemEvent.SELECTED)
+				{
+					itemGroup.setSelectedVersion((String) comboBox.getSelectedItem());
+					mainPanel.displayItem(itemGroup);
+				}
+			});
+
+			versionsPanel.add(comboBox);
+			itemInfo.add(versionsPanel, new GridBagConstraints(0, 0, 3, 1, 0.0, 0.0, CENTER, NONE, new Insets(0, 0, 0, 0), 4, 4));
+		}
+
+		itemInfo.add(itemIcon, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, LINE_START, NONE, new Insets(0, 0, 0, 0), 4, 4));
+		itemInfo.add(wikiIcon, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, LINE_START, NONE, new Insets(0, 0, 0, 0), 4, 10));
+		itemInfo.add(itemInfoRight, new GridBagConstraints(1, 1, 1, 2, 1.0, 0.0, LINE_END, BOTH, new Insets(0, 0, 0, 0), 4, 4));
+		itemInfo.add(itemGEPriceInfo, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0, LINE_START, BOTH, new Insets(0, 20, 0, 20), 4, 4));
+		itemInfo.add(itemHAPriceInfo, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0, LINE_START, BOTH, new Insets(0, 20, 0, 20), 4, 4));
 
 
 		JPanel tabDisplay = new JPanel();

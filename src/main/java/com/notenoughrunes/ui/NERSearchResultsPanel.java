@@ -2,7 +2,9 @@ package com.notenoughrunes.ui;
 
 import com.google.common.base.Strings;
 import com.notenoughrunes.db.H2DataProvider;
+import com.notenoughrunes.db.queries.ItemGroupQuery;
 import com.notenoughrunes.db.queries.SearchItemsQuery;
+import com.notenoughrunes.types.NERInfoItem;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
@@ -10,7 +12,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -39,7 +45,7 @@ class NERSearchResultsPanel extends JPanel
 	private final JPanel centerPanel = new JPanel(cardLayout);
 	private final PluginErrorPanel errorPanel = new PluginErrorPanel();
 
-	private List<NERItem> results = new ArrayList<>();
+	private List<NERInfoItem> results = new ArrayList<>();
 	private final ClientThread clientThread;
 	private final ItemManager itemManager;
 	private final H2DataProvider dataProvider;
@@ -141,10 +147,30 @@ class NERSearchResultsPanel extends JPanel
 		this.dataProvider.executeMany(new SearchItemsQuery(search), searchResults ->
 			this.clientThread.invokeLater(() ->
 			{
+				Map<String, List<NERInfoItem>> groupedResults = new HashMap<>();
 				searchResults.forEach((itemInfo) ->
 				{
-					AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
-					results.add(new NERItem(itemImage, itemInfo));
+					List<NERInfoItem> group;
+					if (groupedResults.containsKey(itemInfo.getGroup()))
+					{
+						group = groupedResults.get(itemInfo.getGroup());
+					}
+					else
+					{
+						group = new ArrayList<>();
+						groupedResults.put(itemInfo.getGroup(), group);
+					}
+					group.add(itemInfo);
+				});
+
+				groupedResults.forEach((groupName, group) -> {
+					group.sort(Comparator.comparing(NERInfoItem::getItemID));
+					Optional<NERInfoItem> defaultItem = group.stream().filter(NERInfoItem::isDefaultVersion).findFirst();
+					NERInfoItem itemResult;
+					itemResult = defaultItem.orElseGet(() -> group.get(0));
+
+					results.add(itemResult);
+
 				});
 
 				if (results.isEmpty())
@@ -178,11 +204,7 @@ class NERSearchResultsPanel extends JPanel
 		this.dataProvider.executeMany(new SearchItemsQuery(search), searchResults ->
 			this.clientThread.invokeLater(() ->
 			{
-				searchResults.forEach((itemInfo) ->
-				{
-					AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
-					results.add(new NERItem(itemImage, itemInfo));
-				});
+				results.addAll(searchResults);
 
 				if (results.isEmpty())
 				{
@@ -209,50 +231,84 @@ class NERSearchResultsPanel extends JPanel
 			return;
 		}
 
-		NERItem item = results.get(0);
-		parentPanel.displayItem(item);
+		NERInfoItem item = results.get(0);
+
+		this.dataProvider.executeMany(new ItemGroupQuery(item.getGroup()), infoItems ->
+			clientThread.invokeLater(() ->
+			{
+				List<NERItem> nerItems = infoItems.stream().map((groupItem) -> {
+					AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(groupItem.getItemID()));
+					return new NERItem(itemImage, groupItem);
+				}).collect(Collectors.toList());
+
+
+				NERItemGroup itemGroup = new NERItemGroup(item.getGroup(), item.getVersion(), nerItems);
+				parentPanel.displayItem(itemGroup);
+			})
+		);
 	}
 
 	void processResult()
 	{
 
 		cardLayout.show(centerPanel, RESULTS_PANEL);
-		int index = 0;
 		if (results.isEmpty())
 		{
 //			log.info("No results found");
 			return;
 		}
-		for (NERItem nerItem : results)
-		{
-			if ((index + 1) > MAX_RESULTS)
+
+			AtomicInteger index = new AtomicInteger();
+
+			for (NERInfoItem infoItem : results)
 			{
-				break;
+				if ((index.get() + 1) > MAX_RESULTS)
+				{
+					break;
+				}
+
+				this.dataProvider.executeMany(new ItemGroupQuery(infoItem.getGroup()), infoItems ->
+				{
+					clientThread.invokeLater(() -> {
+						log.debug("processing results");
+
+						List<NERItem> nerItems = new ArrayList<>();
+						infoItems.forEach((item) -> nerItems.add(new NERItem(this.itemManager.getImage(itemManager.canonicalize(item.getItemID())), item)));
+
+						NERItemGroup itemGroup = new NERItemGroup(infoItem.getGroup(), infoItem.getVersion(), nerItems);
+
+						SwingUtilities.invokeLater(() -> {
+							log.debug("processing results in swing");
+
+							NERSearchItemPanel panel = new NERSearchItemPanel(itemGroup, parentPanel);
+							if (index.getAndIncrement() > 0)
+							{
+								JPanel marginWrapper = new JPanel(new BorderLayout());
+								marginWrapper.setBackground(ColorScheme.DARK_GRAY_COLOR);
+								marginWrapper.setBorder(new EmptyBorder(5, 0, 0, 0));
+								marginWrapper.add(panel, BorderLayout.NORTH);
+								searchItemsPanel.add(marginWrapper, constraints);
+							}
+							else
+							{
+								searchItemsPanel.add(panel, constraints);
+							}
+							searchItemsPanel.updateUI();
+
+							constraints.gridy++;
+						});
+					});
+
+				});
 			}
 
-			NERSearchItemPanel panel = new NERSearchItemPanel(nerItem, parentPanel);
-			if (index++ > 0)
-			{
-				JPanel marginWrapper = new JPanel(new BorderLayout());
-				marginWrapper.setBackground(ColorScheme.DARK_GRAY_COLOR);
-				marginWrapper.setBorder(new EmptyBorder(5, 0, 0, 0));
-				marginWrapper.add(panel, BorderLayout.NORTH);
-				searchItemsPanel.add(marginWrapper, constraints);
-			}
-			else
-			{
-				searchItemsPanel.add(panel, constraints);
-			}
-			searchItemsPanel.updateUI();
 
-			constraints.gridy++;
-		}
 	}
 
-	private Comparator<NERItem> compareNameAndGroup(String itemName)
+	private Comparator<NERInfoItem> compareNameAndGroup(String itemName)
 	{
-		return Comparator.comparing((NERItem item) -> new LevenshteinDistance().apply(item.getInfoItem().getName(), itemName))
-			.thenComparing(item -> new LevenshteinDistance().apply(item.getInfoItem().getGroup(), itemName));
+		return Comparator.comparing((NERInfoItem item) -> new LevenshteinDistance().apply(item.getName(), itemName))
+			.thenComparing(item -> new LevenshteinDistance().apply(item.getGroup(), itemName));
 
 	}
 }

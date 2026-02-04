@@ -2,6 +2,7 @@ package com.notenoughrunes.ui;
 
 import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.db.queries.ItemByIDQuery;
+import com.notenoughrunes.db.queries.ItemGroupQuery;
 import com.notenoughrunes.types.NERInfoItem;
 import com.notenoughrunes.types.NERProductionMaterial;
 import com.notenoughrunes.types.NERProductionRecipe;
@@ -23,6 +24,7 @@ import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -223,12 +225,18 @@ public class NERRecipePanel extends JPanel
 
 	private void displayItem(NERInfoItem itemInfo)
 	{
-		clientThread.invokeLater(() -> {
-			AsyncBufferedImage icon = this.itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
-			NERItem nerItem = new NERItem(icon, itemInfo);
+		this.dataProvider.executeMany(new ItemGroupQuery(itemInfo.getGroup()), infoItems ->
+			clientThread.invokeLater(() ->
+				{
+				List<NERItem> nerItems = infoItems.stream().map((groupItem) -> {
+					AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(groupItem.getItemID()));
+					return new NERItem(itemImage, groupItem);
+				}).collect(Collectors.toList());
 
-			SwingUtilities.invokeLater(() -> mainPanel.displayItem(nerItem));
-		});
+				NERItemGroup itemGroup = new NERItemGroup(itemInfo.getGroup(), itemInfo.getVersion(), nerItems);
+				SwingUtilities.invokeLater(() -> mainPanel.displayItem(itemGroup));
+			})
+		);
 
 	}
 

@@ -1,5 +1,8 @@
 package com.notenoughrunes.ui;
 
+import com.notenoughrunes.db.H2DataProvider;
+import com.notenoughrunes.db.queries.ItemGroupQuery;
+import com.notenoughrunes.types.NERSpawnGroup;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -10,6 +13,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -21,74 +26,82 @@ class NERSearchItemPanel extends JPanel
 {
 	private static final Dimension ICON_SIZE = new Dimension(32, 32);
 
-	NERSearchItemPanel(NERItem item, NERPanel mainPanel)
+	NERSearchItemPanel(NERItemGroup itemGroup, NERPanel mainPanel)
 	{
-		BorderLayout layout = new BorderLayout();
-		layout.setHgap(5);
-		setLayout(layout);
-		setToolTipText(item.getInfoItem().getGroup() + (item.getInfoItem().getVersion() != null && !item.getInfoItem().getVersion().isEmpty()  ? (" - " + item.getInfoItem().getVersion()) : ""));
-		setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			log.debug("creating search item panel group: {}", itemGroup.getGroup());
+			Optional<NERItem> searchedItemOpt = itemGroup.getItems().stream().filter((groupItem) -> Objects.equals(groupItem.getInfoItem().getVersion(), itemGroup.getSelectedVersion())).findFirst();
+			NERItem searchedItem = searchedItemOpt.orElseGet(() -> itemGroup.getItems().get(0));
+			log.debug(String.valueOf(searchedItem));
+			log.debug("creating search item panel: {}", searchedItem.getInfoItem().getName());
 
-		Color background = getBackground();
-		List<JPanel> panels = new ArrayList<>();
-		panels.add(this);
+			BorderLayout layout = new BorderLayout();
+			layout.setHgap(5);
+			setLayout(layout);
+			setToolTipText(searchedItem.getInfoItem().getName());
+			setBackground(ColorScheme.DARKER_GRAY_COLOR);
 
-		MouseAdapter itemPanelMouseListener = new MouseAdapter()
-		{
-			@Override
-			public void mouseEntered(MouseEvent e)
+			Color background = getBackground();
+			List<JPanel> panels = new ArrayList<>();
+			panels.add(this);
+
+			MouseAdapter itemPanelMouseListener = new MouseAdapter()
 			{
-				for (JPanel panel : panels)
+				@Override
+				public void mouseEntered(MouseEvent e)
 				{
-					matchComponentBackground(panel, ColorScheme.DARK_GRAY_HOVER_COLOR);
+					for (JPanel panel : panels)
+					{
+						matchComponentBackground(panel, ColorScheme.DARK_GRAY_HOVER_COLOR);
+					}
+					setCursor(new Cursor(Cursor.HAND_CURSOR));
 				}
-				setCursor(new Cursor(Cursor.HAND_CURSOR));
-			}
 
-			@Override
-			public void mouseExited(MouseEvent e)
-			{
-				for (JPanel panel : panels)
+				@Override
+				public void mouseExited(MouseEvent e)
 				{
-					matchComponentBackground(panel, background);
+					for (JPanel panel : panels)
+					{
+						matchComponentBackground(panel, background);
+					}
+					setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 				}
-				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-			}
 
-			@Override
-			public void mouseClicked(MouseEvent e)
-			{
+				@Override
+				public void mouseClicked(MouseEvent e)
+				{
 //				log.info("Clicked " + item.getInfoItem().getName());
-				mainPanel.displayItem(item);
+					mainPanel.displayItem(itemGroup);
+				}
+
+			};
+
+			addMouseListener(itemPanelMouseListener);
+
+			setBorder(new EmptyBorder(5, 5, 5, 0));
+
+			JLabel itemIcon = new JLabel();
+			itemIcon.setPreferredSize(ICON_SIZE);
+			if (searchedItem.getIcon() != null)
+			{
+				searchedItem.getIcon().addTo(itemIcon);
 			}
+			add(itemIcon, BorderLayout.LINE_START);
 
-		};
+			// Item details panel
+			JPanel rightPanel = new JPanel(new GridLayout(1, 1));
+			panels.add(rightPanel);
+			rightPanel.setBackground(background);
 
-		addMouseListener(itemPanelMouseListener);
+			JLabel itemName = new JLabel();
+			itemName.setForeground(Color.WHITE);
+			itemName.setMaximumSize(new Dimension(0, 0));
+			itemName.setPreferredSize(new Dimension(0, 0));
+			itemName.setText(searchedItem.getInfoItem().getGroup());
+			rightPanel.add(itemName);
 
-		setBorder(new EmptyBorder(5, 5, 5, 0));
+			add(rightPanel, BorderLayout.CENTER);
+		;
 
-		JLabel itemIcon = new JLabel();
-		itemIcon.setPreferredSize(ICON_SIZE);
-		if (item.getIcon() != null)
-		{
-			item.getIcon().addTo(itemIcon);
-		}
-		add(itemIcon, BorderLayout.LINE_START);
-
-		// Item details panel
-		JPanel rightPanel = new JPanel(new GridLayout(1, 1));
-		panels.add(rightPanel);
-		rightPanel.setBackground(background);
-
-		JLabel itemName = new JLabel();
-		itemName.setForeground(Color.WHITE);
-		itemName.setMaximumSize(new Dimension(0, 0));
-		itemName.setPreferredSize(new Dimension(0, 0));
-		itemName.setText(item.getInfoItem().getName());
-		rightPanel.add(itemName);
-
-		add(rightPanel, BorderLayout.CENTER);
 	}
 
 	private void matchComponentBackground(JPanel panel, Color color)

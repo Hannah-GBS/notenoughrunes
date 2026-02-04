@@ -5,10 +5,13 @@ import com.notenoughrunes.NotEnoughRunesConfig;
 import com.notenoughrunes.NotEnoughRunesPlugin;
 import com.notenoughrunes.db.H2DataProvider;
 import com.notenoughrunes.db.queries.ItemByIDQuery;
+import com.notenoughrunes.db.queries.ItemGroupQuery;
 import com.notenoughrunes.types.NERInfoItem;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -153,9 +156,9 @@ public class NERPanel extends PluginPanel
 		searchBar.setEditable(true);
 	}
 
-	void displayItem(NERItem item)
+	void displayItem(NERItemGroup itemGroup)
 	{
-		itemPanel = new NERItemPanel(item, itemManager, dataProvider, clientThread, this, config, client, eventBus, pluginManager);
+		itemPanel = new NERItemPanel(itemGroup, itemManager, dataProvider, clientThread, this, config, client, eventBus, pluginManager);
 		remove(currentPanel);
 		currentPanel = itemPanel;
 		add(itemPanel, BorderLayout.CENTER);
@@ -188,13 +191,18 @@ public class NERPanel extends PluginPanel
 
 	void getNerItem(NERInfoItem itemInfo)
 	{
-		clientThread.invokeLater(() ->
-		{
-			AsyncBufferedImage icon = itemManager.getImage(itemManager.canonicalize(itemInfo.getItemID()));
-			NERItem nerItem = new NERItem(icon, itemInfo);
+		this.dataProvider.executeMany(new ItemGroupQuery(itemInfo.getGroup()), infoItems ->
+			clientThread.invokeLater(() ->
+				{
+				List<NERItem> nerItems = infoItems.stream().map((groupItem) -> {
+					AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(groupItem.getItemID()));
+					return new NERItem(itemImage, groupItem);
+				}).collect(Collectors.toList());
 
-			SwingUtilities.invokeLater(() -> displayItem(nerItem));
-		});
+				NERItemGroup itemGroup = new NERItemGroup(itemInfo.getGroup(), itemInfo.getVersion(), nerItems);
+				SwingUtilities.invokeLater(() -> displayItem(itemGroup));
+			})
+		);
 	}
 
 //	public NERInfoItem getItemByNameAndVersion(String itemName, String version)

@@ -41,7 +41,8 @@ public class ItemByIDQuery extends ModeledQuery<NERInfoItem>
 				rs.getString("VERSION"),
 				rs.getString("URL"),
 				rs.getBoolean("IS_MEMBERS"),
-				rs.getBoolean("IS_TRADEABLE")
+				rs.getBoolean("IS_TRADEABLE"),
+				rs.getBoolean("IS_DEFAULT_VERSION")
 			);
 		}
 		finally

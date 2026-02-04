@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class SearchItemsQuery extends ModeledQuery<NERInfoItem>
+public class ItemGroupQuery extends ModeledQuery<NERInfoItem>
 {
 
 	private final String searchTerms;
@@ -18,14 +18,14 @@ public class SearchItemsQuery extends ModeledQuery<NERInfoItem>
 		//language=SQL
 		return "SELECT I.*, IG.NAME AS GROUP_NAME FROM ITEMS I " +
 			"LEFT JOIN ITEM_GROUPS IG on IG.ID = I.GROUP_ID " +
-			"WHERE I.SEARCH_NAME LIKE ? " +
+			"WHERE IG.SEARCH_NAME LIKE ? " +
 			"LIMIT 200";
 	}
 
 	@Override
 	public void setParams(PreparedStatement ps) throws SQLException
 	{
-		ps.setString(1, "%" + searchTerms.toLowerCase() + "%");
+		ps.setString(1, searchTerms.toLowerCase());
 	}
 
 	@Override
