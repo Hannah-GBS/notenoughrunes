@@ -10,20 +10,20 @@ import lombok.RequiredArgsConstructor;
 public class ItemDropSourcesQuery extends ModeledQuery<NERDropSource>
 {
 
-	private final String itemName;
+	private final int itemId;
 
 	@Override
 	public String getSql()
 	{
 		//language=SQL	
 		return "SELECT * FROM DROP_SOURCES DS " +
-			"WHERE ITEM_NAME = ?";
+			"WHERE ITEM_ID = ?";
 	}
 
 	@Override
 	public void setParams(PreparedStatement ps) throws SQLException
 	{
-		ps.setString(1, itemName);
+		ps.setInt(1, itemId);
 	}
 
 	@Override

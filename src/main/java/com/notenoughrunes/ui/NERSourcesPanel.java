@@ -66,7 +66,6 @@ class NERSourcesPanel extends JPanel
 	private final Client client;
 	private final EventBus eventBus;
 	private final PluginManager pluginManager;
-	private final String useName;
 	private final NERPanel mainPanel;
 	private final NotEnoughRunesConfig config;
 
@@ -97,16 +96,13 @@ class NERSourcesPanel extends JPanel
 		this.eventBus = eventBus;
 		this.pluginManager = pluginManager;
 
-		this.useName = nerItem.getInfoItem().getName().length() > nerItem.getInfoItem().getGroup().length()
-			? nerItem.getInfoItem().getName()
-			: nerItem.getInfoItem().getGroup();
 
 		setLayout(new BorderLayout());
 
 		dataProvider.executeMany(new ItemProducedByQuery(nerItem.getInfoItem().getItemID()), recipes ->
-			dataProvider.executeMany(new ItemDropSourcesQuery(useName), dropSources ->
+			dataProvider.executeMany(new ItemDropSourcesQuery(nerItem.getInfoItem().getItemID()), dropSources ->
 				dataProvider.executeMany(new ItemSoldAtQuery(nerItem.getInfoItem().getItemID()), shops ->
-					dataProvider.executeMany(new ItemSpawnQuery(nerItem.getInfoItem().getName(), nerItem.getInfoItem().getGroup()), spawns ->
+					dataProvider.executeMany(new ItemSpawnQuery(nerItem.getInfoItem().getItemID()), spawns ->
 						SwingUtilities.invokeLater(() ->
 							buildPanel(recipes, dropSources, shops, spawns))))));
 	}
@@ -151,12 +147,12 @@ class NERSourcesPanel extends JPanel
 		{
 			case RECIPES:
 				recipes.forEach((recipe) ->
-						sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName, dataProvider)));
+						sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, nerItem.getInfoItem(), dataProvider)));
 				break;
 
 			case DROPS:
 				if (!dropSources.isEmpty()) {
-					sectionItems.add(new NERDropsPanel(new NERDropItem(useName, dropSources)));
+					sectionItems.add(new NERDropsPanel(new NERDropItem(nerItem.getInfoItem().getName(), nerItem.getInfoItem().getVersion(), dropSources)));
 				}
 				break;
 

@@ -146,7 +146,7 @@ class NERUsesPanel extends JPanel
 		{
 			case RECIPES:
 				recipes.forEach((recipe) ->
-					sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, useName, dataProvider)));
+					sectionItems.add(new NERRecipePanel(recipe, itemManager, clientThread, mainPanel, nerItem.getInfoItem(), dataProvider)));
 				break;
 
 			case SHOPS:

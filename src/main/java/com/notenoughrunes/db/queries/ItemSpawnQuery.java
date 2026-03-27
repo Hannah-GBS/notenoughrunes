@@ -10,9 +10,7 @@ import lombok.RequiredArgsConstructor;
 public class ItemSpawnQuery extends ModeledQuery<NERSpawnItem>
 {
 
-	private final String itemName;
-
-	private final String groupName;
+	private final int itemId;
 
 	@Override
 	public String getSql()
@@ -20,15 +18,13 @@ public class ItemSpawnQuery extends ModeledQuery<NERSpawnItem>
 		//language=SQL	
 		return "SELECT IG.NAME AS ITEM_GROUP_NAME, SI.* FROM ITEM_GROUPS IG " +
 			"JOIN SPAWN_ITEMS SI ON IG.ID = SI.GROUP_ID " +
-			"WHERE SI.NAME = ?" +
-			"	AND IG.NAME = ?";
+			"WHERE SI.ITEM_ID = ?";
 	}
 
 	@Override
 	public void setParams(PreparedStatement ps) throws SQLException
 	{
-		ps.setString(1, itemName);
-		ps.setString(2, groupName);
+		ps.setInt(1, itemId);
 	}
 
 	@Override
@@ -39,6 +35,7 @@ public class ItemSpawnQuery extends ModeledQuery<NERSpawnItem>
 			return new NERSpawnItem(
 				rs.getString("ITEM_GROUP_NAME"),
 				rs.getString("NAME"),
+				rs.getString("VERSION"),
 				rs.getString("COORDS"),
 				rs.getString("LOCATION"),
 				rs.getBoolean("IS_MEMBERS"),

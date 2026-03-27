@@ -25,7 +25,10 @@ public class NERProductionRecipe
 	private final boolean isMembers;
 
 	private final String outputItemName;
+
+	@Nullable
 	private final String outputItemVersion;
+
 	private final int outputItemID;
 	private final String outputQuantity;
 	private final String outputQuantityNote;

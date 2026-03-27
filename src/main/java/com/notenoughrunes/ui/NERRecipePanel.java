@@ -113,7 +113,7 @@ public class NERRecipePanel extends JPanel
 	private final NERPanel mainPanel;
 	private final H2DataProvider dataProvider;
 
-	public NERRecipePanel(NERProductionRecipe recipe, ItemManager itemManager, ClientThread clientThread, NERPanel mainPanel, String useName, H2DataProvider dataProvider)
+	public NERRecipePanel(NERProductionRecipe recipe, ItemManager itemManager, ClientThread clientThread, NERPanel mainPanel, NERInfoItem nerInfoItem, H2DataProvider dataProvider)
 	{
 		this.itemManager = itemManager;
 		this.clientThread = clientThread;
@@ -171,16 +171,15 @@ public class NERRecipePanel extends JPanel
 			JPanel materialRow = new JPanel(new GridBagLayout());
 			materialRow.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 			JLabel materialLabel = new JLabel();
-			setItemImage(materialLabel, material.getItemID());
-			materialLabel.setText(material.getName());
-			materialLabel.setToolTipText(material.getName());
+			setItemDetails(materialLabel, material.getItemID());
+
 			materialLabel.setMaximumSize(new Dimension(0, 30));
 			materialLabel.setPreferredSize(new Dimension(0, 30));
 			materialRow.add(materialLabel, new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, LINE_START, BOTH, NO_INSETS, 4, 4));
 
 			materialRow.add(new JLabel("x" + material.getQuantity()), new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, EAST, NONE, new Insets(0, 8, 0, 0), 4, 4));
 
-			addMouseAdapter(materialLabel, material.getItemID(), useName);
+			addMouseAdapter(materialLabel, material.getItemID(), nerInfoItem.getItemID());
 
 			add(materialRow, new GridBagConstraints(0, row++, 4, 1, 0.0, 0.0, CENTER, BOTH, NO_INSETS, 4, 4));
 		}
@@ -189,15 +188,13 @@ public class NERRecipePanel extends JPanel
 
 		add(new JLabel("Output"), new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
 		JLabel outputLabel = new JLabel();
-		setItemImage(outputLabel, recipe.getOutputItemID());
-		outputLabel.setText(recipe.getOutputItemName());
-		outputLabel.setToolTipText(recipe.getOutputItemName());
-		outputLabel.setMaximumSize(new Dimension(0, 20));
-		outputLabel.setPreferredSize(new Dimension(0, 20));
+		setItemDetails(outputLabel, recipe.getOutputItemID());
+		outputLabel.setMaximumSize(new Dimension(0, 30));
+		outputLabel.setPreferredSize(new Dimension(0, 30));
 
 		add(outputLabel, new GridBagConstraints(0, row, 3, 1, 1.0, 0.0, LINE_START, BOTH, NO_INSETS, 4, 4));
 
-		addMouseAdapter(outputLabel, recipe.getOutputItemID(), useName);
+		addMouseAdapter(outputLabel, recipe.getOutputItemID(), nerInfoItem.getItemID());
 
 		JLabel quantityLabel = new JLabel("x" + recipe.getOutputQuantity());
 		add(quantityLabel, new GridBagConstraints(3, row, 1, 1, 0.0, 0.0, LINE_END, NONE, new Insets(0, 4, 0, 0), 4, 4));
@@ -209,12 +206,18 @@ public class NERRecipePanel extends JPanel
 		}
 	}
 
-	private void setItemImage(JLabel label, int itemId)
+	private void setItemDetails(JLabel label, int itemId)
 	{
 		clientThread.invokeLater(() ->
 		{
 			AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemId));
-			SwingUtilities.invokeLater(() -> label.setIcon(new ImageIcon(itemImage)));
+			dataProvider.executeSingle(new ItemByIDQuery(itemId), itemInfo ->
+				SwingUtilities.invokeLater(() -> {
+					label.setIcon(new ImageIcon(itemImage));
+					label.setText(itemInfo.getName());
+					label.setToolTipText(itemInfo.getName());
+				})
+			);
 		});
 	}
 
@@ -242,8 +245,10 @@ public class NERRecipePanel extends JPanel
 		toUnderline.setToolTipText(tooltip);
 	}
 
-	private void addMouseAdapter(JLabel materialLabel, int itemID, String useName)
+	private void addMouseAdapter(JLabel materialLabel, int itemID, int currentItemID)
 	{
+		if (currentItemID == itemID) return;
+
 		materialLabel.addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -251,12 +256,7 @@ public class NERRecipePanel extends JPanel
 			{
 				dataProvider.executeSingle(new ItemByIDQuery(itemID), itemInfo ->
 					SwingUtilities.invokeLater(() ->
-					{
-						if (itemInfo.getName().equals(useName) || itemInfo.getGroup().equals(useName)) {
-							return;
-						}
-						displayItem(itemInfo);
-					}));
+						displayItem(itemInfo)));
 			}
 
 			@Override
