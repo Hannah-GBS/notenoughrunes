@@ -36,6 +36,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ItemComposition;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.ColorScheme;
@@ -110,6 +111,7 @@ public class NERRecipePanel extends JPanel
 	));
 
 	private static final Insets NO_INSETS = new Insets(0, 0, 0, 0);
+	private static final int BANK_FILLER_ID = 20594;
 	private final ItemManager itemManager;
 	private final ClientThread clientThread;
 	private final NERPanel mainPanel;
@@ -173,7 +175,7 @@ public class NERRecipePanel extends JPanel
 			JPanel materialRow = new JPanel(new GridBagLayout());
 			materialRow.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 			JLabel materialLabel = new JLabel();
-			setItemDetails(materialLabel, material.getItemID());
+			setItemDetails(materialLabel, material.getItemID(), material.getName());
 
 			materialLabel.setMaximumSize(new Dimension(0, 30));
 			materialLabel.setPreferredSize(new Dimension(0, 30));
@@ -190,7 +192,7 @@ public class NERRecipePanel extends JPanel
 
 		add(new JLabel("Output"), new GridBagConstraints(0, row++, 4, 1, 1.0, 0.0, CENTER, NONE, NO_INSETS, 4, 4));
 		JLabel outputLabel = new JLabel();
-		setItemDetails(outputLabel, recipe.getOutputItemID());
+		setItemDetails(outputLabel, recipe.getOutputItemID(), recipe.getOutputItemName());
 		outputLabel.setMaximumSize(new Dimension(0, 30));
 		outputLabel.setPreferredSize(new Dimension(0, 30));
 
@@ -208,18 +210,24 @@ public class NERRecipePanel extends JPanel
 		}
 	}
 
-	private void setItemDetails(JLabel label, int itemId)
+	private void setItemDetails(JLabel label, int itemId, String itemName)
 	{
 		clientThread.invokeLater(() ->
 		{
 			AsyncBufferedImage itemImage = this.itemManager.getImage(itemManager.canonicalize(itemId));
-			dataProvider.executeSingle(new ItemByIDQuery(itemId), itemInfo ->
+			ItemComposition itemComposition = this.itemManager.getItemComposition(itemManager.canonicalize(itemId));
 				SwingUtilities.invokeLater(() -> {
 					label.setIcon(new ImageIcon(itemImage));
-					label.setText(itemInfo.getName());
-					label.setToolTipText(itemInfo.getName());
-				})
-			);
+					if (itemId != BANK_FILLER_ID)
+					{
+						label.setText(itemComposition.getName());
+						label.setToolTipText(itemComposition.getName());
+					} else {
+						label.setText(itemName);
+						label.setToolTipText(itemName);
+					}
+
+				});
 		});
 	}
 
@@ -255,7 +263,7 @@ public class NERRecipePanel extends JPanel
 
 	private void addMouseAdapter(JLabel materialLabel, int itemID, int currentItemID)
 	{
-		if (currentItemID == itemID) return;
+		if (currentItemID == itemID || itemID == BANK_FILLER_ID) return;
 
 		materialLabel.addMouseListener(new MouseAdapter()
 		{
