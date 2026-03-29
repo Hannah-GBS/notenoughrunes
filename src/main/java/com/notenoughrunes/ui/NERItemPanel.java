@@ -38,6 +38,7 @@ import javax.swing.border.EmptyBorder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.ItemComposition;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.game.ItemManager;
@@ -59,6 +60,8 @@ class NERItemPanel extends JPanel
 	private static final BufferedImage WIKI_ICON_SELECTED = ImageUtil.loadImageResource(NERItemPanel.class, "wiki_icon_selected.png");
 	private static final BufferedImage GE_ICON = ImageUtil.loadImageResource(NERItemPanel.class, "ge_icon.png");
 	private static final BufferedImage HA_ICON = ImageUtil.loadImageResource(NERItemPanel.class, "ha_icon.png");
+
+	private static final int ITEM_COMP_ALCHABLE_PARAM = 295;
 
 	@Getter
 	private final NERSourcesPanel sourcesPanel;
@@ -241,22 +244,45 @@ class NERItemPanel extends JPanel
 		clientThread.invokeLater(() ->
 		{
 			int gePrice = itemManager.getItemPrice(infoItem.getItemID());
-			int haPrice = itemManager.getItemComposition(infoItem.getItemID()).getHaPrice();
+			ItemComposition comp = itemManager.getItemComposition(infoItem.getItemID());
+			int alchable = comp.getIntValue(ITEM_COMP_ALCHABLE_PARAM);
+			int haPrice = comp.getHaPrice();
 
 			SwingUtilities.invokeLater(() ->
 			{
 				if (gePrice > 0)
 				{
 					geLabel.setText(QuantityFormatter.formatNumber(gePrice) + "gp");
+
+					if (!infoItem.isTradeable())
+					{
+						geLabel.setText(geLabel.getText() + "*");
+						String tooltip = "This item is not tradeable on the GE. \nDisplayed value may be based on another item this item can be transformed into.";
+						addTooltip(geLabel, tooltip);
+					}
+
 					geRow.setVisible(true);
 				}
 
-				if (haPrice > 0)
+				if (haPrice > 0 && alchable == 0)
 				{
 					haLabel.setText(QuantityFormatter.formatNumber(haPrice) + "gp");
 					haRow.setVisible(true);
 				}
 			});
 		});
+	}
+
+	private void addTooltip(JLabel toUnderline, String tooltip)
+	{
+		// add underline to text
+		Font f = toUnderline.getFont();
+		Map<TextAttribute, Object> attributes = new HashMap<>(f.getAttributes());
+		attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_DOTTED);
+		toUnderline.setFont(f.deriveFont(attributes));
+		toUnderline.setText(toUnderline.getText());
+
+		// create hover tooltip
+		toUnderline.setToolTipText(tooltip);
 	}
 }
