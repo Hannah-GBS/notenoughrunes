@@ -259,6 +259,8 @@ public class NERRecipePanel extends JPanel
 
 		materialLabel.addMouseListener(new MouseAdapter()
 		{
+			private Cursor cursor;
+
 			@Override
 			public void mouseClicked(MouseEvent e)
 			{
@@ -270,13 +272,19 @@ public class NERRecipePanel extends JPanel
 			@Override
 			public void mouseEntered(MouseEvent e)
 			{
+				cursor = getCursor();
 				setCursor(new Cursor(Cursor.HAND_CURSOR));
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e)
 			{
-				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+				if (cursor != null)
+				{
+					setCursor(cursor);
+				} else {
+					setCursor(new Cursor(Cursor.getDefaultCursor().getType()));
+				}
 			}
 		});
 	}
