@@ -1,8 +1,5 @@
 package com.notenoughrunes.ui;
 
-import com.notenoughrunes.db.H2DataProvider;
-import com.notenoughrunes.db.queries.ItemGroupQuery;
-import com.notenoughrunes.types.NERSpawnGroup;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -100,7 +97,6 @@ class NERSearchItemPanel extends JPanel
 			rightPanel.add(itemName);
 
 			add(rightPanel, BorderLayout.CENTER);
-		;
 
 	}
 
