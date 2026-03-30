@@ -48,6 +48,7 @@ public class NERDropsPanel extends JPanel
 		"smithing",
 		"woodcutting",
 		"thieving",
+		"sailing",
 		""
 	};
 	private static final Map<String, BufferedImage> dropTypeImages = Stream.of(
