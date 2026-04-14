@@ -9,6 +9,7 @@ import com.notenoughrunes.ui.NERPanel;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -91,7 +92,7 @@ public class NotEnoughRunesPlugin extends Plugin
 	static final Pattern RAID_LOOT_REGEX = Pattern.compile(".* received special loot from a raid: (.+?)(?: \\([\\d,]+ coins\\)(?: .+)*)*\\.");
 	static final Pattern DROP_REGEX = Pattern.compile(".* received a drop: (?:[\\d,]* x )*(.+?)(?: \\([\\d,]+ coins\\)(?: .+)*)*\\.");
 	static final Pattern CLUE_REGEX = Pattern.compile(".* received a clue item: (?:[\\d,]* x )*(.+?)(?: \\([\\d,]+ coins\\))*\\.");
-
+	static final List<String> FINAL_OPTS = Arrays.asList("Examine", "Lock-slot", "Unlock-slot");
 
 	@Override
 	protected void startUp() throws Exception
@@ -162,7 +163,7 @@ public class NotEnoughRunesPlugin extends Plugin
 			&& !(config.clogLookupMode() == MenuLookupMode.SHIFT && !client.isKeyPressed(KeyCode.KC_SHIFT));
 
 		if (((shouldAddInv || shouldAddEquip || shouldAddBank)
-			&& "Examine".equals(entry.getOption()))
+			&& FINAL_OPTS.contains(entry.getOption()))
 			|| (shouldAddClog && "Check".equals(entry.getOption()) && entry.getIdentifier() == 1))
 		{
 			int itemId = w.getItemId();
