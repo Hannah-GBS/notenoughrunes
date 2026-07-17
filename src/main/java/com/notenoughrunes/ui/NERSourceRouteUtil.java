@@ -1,6 +1,7 @@
 package com.notenoughrunes.ui;
 
 import javax.annotation.Nullable;
+import net.runelite.api.Constants;
 import net.runelite.api.coords.WorldPoint;
 
 final class NERSourceRouteUtil
@@ -23,16 +24,20 @@ final class NERSourceRouteUtil
 			return null;
 		}
 
-		String xText = parts[0].trim();
-		String yText = parts[1].trim();
-		String planeText = plane.trim();
-		if (!xText.matches("\\d{1,5}") || !yText.matches("\\d{1,5}") || !planeText.matches("[0-3]"))
+		try
+		{
+			int x = Integer.parseInt(parts[0].trim());
+			int y = Integer.parseInt(parts[1].trim());
+			int z = Integer.parseInt(plane.trim());
+
+			// Jagex packed coordinates use 14 bits for x/y, and RuneLite defines four planes.
+			return x >= 0 && x <= 0x3FFF && y >= 0 && y <= 0x3FFF && z >= 0 && z < Constants.MAX_Z
+				? new WorldPoint(x, y, z)
+				: null;
+		}
+		catch (NumberFormatException ignored)
 		{
 			return null;
 		}
-
-		int x = Integer.parseInt(xText);
-		int y = Integer.parseInt(yText);
-		return x <= 0x3FFF && y <= 0x3FFF ? new WorldPoint(x, y, Integer.parseInt(planeText)) : null;
 	}
 }
