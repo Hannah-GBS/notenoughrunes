@@ -255,7 +255,7 @@ class NERSourcesPanel extends JPanel
 
 	private JButton createRouteButton(List<NERShop> shops, List<NERSpawnItem> spawns)
 	{
-		JButton routeButton = new JButton("Shortest Path to listed source");
+		JButton routeButton = new JButton("Shortest Path to shop/spawn");
 		routeButton.setPreferredSize(new Dimension(220, 30));
 		routeButton.setEnabled(false);
 		routeButton.setToolTipText("Checking route availability...");
