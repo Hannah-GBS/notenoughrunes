@@ -175,6 +175,7 @@ class NERSearchResultsPanel extends JPanel
 
 				if (results.isEmpty())
 				{
+					parentPanel.clearShortestPath();
 					searchBar.setIcon(IconTextField.Icon.ERROR);
 					errorPanel.setContent("No results found", "No items were found with that name, please try again.");
 					cardLayout.show(centerPanel, ERROR_PANEL);
@@ -208,6 +209,7 @@ class NERSearchResultsPanel extends JPanel
 
 				if (results.isEmpty())
 				{
+					parentPanel.clearShortestPath();
 					searchBar.setIcon(IconTextField.Icon.ERROR);
 					errorPanel.setContent("No results found", "No items were found with that name, please try again.");
 					cardLayout.show(centerPanel, ERROR_PANEL);
