@@ -23,7 +23,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -37,9 +40,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.GameState;
+import net.runelite.api.WorldType;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.eventbus.EventBus;
+import net.runelite.client.events.PluginMessage;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.DynamicGridLayout;
@@ -112,6 +120,12 @@ class NERSourcesPanel extends JPanel
 		GridBagConstraints containerGbc = new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, GridBagConstraints.LINE_START, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0);
 		JPanel recipeSection = createSection(SourceSectionType.RECIPES, recipes, dropSources, shops, spawns);
 		JPanel container = new JPanel(new GridBagLayout());
+		if (config.routeShopSources() || config.routeGroundSpawnSources())
+		{
+			container.add(createRouteButton(shops, spawns), new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 8, 0), 0, 0));
+			containerGbc.gridy++;
+		}
+
 		container.add(recipeSection, containerGbc);
 		containerGbc.gridy++;
 		JPanel dropsSection = createSection(SourceSectionType.DROPS, recipes, dropSources, shops, spawns);
@@ -237,6 +251,127 @@ class NERSourcesPanel extends JPanel
 		}
 
 		return section;
+	}
+
+	private JButton createRouteButton(List<NERShop> shops, List<NERSpawnItem> spawns)
+	{
+		JButton routeButton = new JButton("Shortest Path to listed source");
+		routeButton.setPreferredSize(new Dimension(220, 30));
+		routeButton.setEnabled(false);
+		routeButton.setToolTipText("Checking route availability...");
+		routeButton.addActionListener(event -> updateRouteButton(routeButton, shops, spawns, true));
+		updateRouteButton(routeButton, shops, spawns, false);
+		return routeButton;
+	}
+
+	private void updateRouteButton(JButton routeButton, List<NERShop> shops, List<NERSpawnItem> spawns, boolean requestRoute)
+	{
+		if (requestRoute)
+		{
+			routeButton.setEnabled(false);
+		}
+
+		clientThread.invokeLater(() ->
+		{
+			String tooltip;
+			if (client.getGameState() != GameState.LOGGED_IN || client.getLocalPlayer() == null)
+			{
+				tooltip = "Log in to route to an item source.";
+			}
+			else if (findShortestPathPlugin() == null)
+			{
+				tooltip = "Enable the Shortest Path plugin to use this action.";
+			}
+			else
+			{
+				Set<WorldPoint> targets = buildRouteTargets(shops, spawns);
+				if (targets.isEmpty())
+				{
+					tooltip = "No valid enabled shop or ground-spawn locations are available.";
+				}
+				else
+				{
+					if (requestRoute)
+					{
+						eventBus.post(new PluginMessage("shortestpath", "path", Map.of("target", targets)));
+					}
+					tooltip = requestRoute
+						? "Route request sent to Shortest Path. Stock and access are not guaranteed."
+						: "Ask Shortest Path to route to an enabled listed shop or ground spawn. Stock and access are not guaranteed.";
+				}
+			}
+
+			setRouteButtonState(routeButton, tooltip);
+		});
+	}
+
+	private Set<WorldPoint> buildRouteTargets(List<NERShop> shops, List<NERSpawnItem> spawns)
+	{
+		Set<WorldPoint> targets = new HashSet<>();
+		boolean membersWorld = client.getWorldType().contains(WorldType.MEMBERS);
+
+		if (config.routeShopSources())
+		{
+			for (NERShop shop : shops)
+			{
+				if ((!membersWorld && shop.isMembers()) || hasKnownZeroStock(shop))
+				{
+					continue;
+				}
+
+				WorldPoint target = NERSourceRouteUtil.parseWorldPoint(shop.getCoords(), shop.getPlane());
+				if (target != null)
+				{
+					targets.add(target);
+				}
+			}
+		}
+
+		if (config.routeGroundSpawnSources())
+		{
+			for (NERSpawnItem spawn : spawns)
+			{
+				if (!membersWorld && spawn.isMembers())
+				{
+					continue;
+				}
+
+				WorldPoint target = NERSourceRouteUtil.parseWorldPoint(spawn.getCoords(), spawn.getPlane());
+				if (target != null)
+				{
+					targets.add(target);
+				}
+			}
+		}
+
+		return targets;
+	}
+
+	private static boolean hasKnownZeroStock(NERShop shop)
+	{
+		return !shop.getItems().isEmpty() && shop.getItems().stream()
+			.allMatch(item -> item.getStock() != null && "0".equals(item.getStock().trim()));
+	}
+
+	private Plugin findShortestPathPlugin()
+	{
+		for (Plugin plugin : pluginManager.getPlugins())
+		{
+			if ("Shortest Path".equals(plugin.getName()) && pluginManager.isPluginActive(plugin))
+			{
+				return plugin;
+			}
+		}
+		return null;
+	}
+
+	private static void setRouteButtonState(JButton routeButton, String tooltip)
+	{
+		SwingUtilities.invokeLater(() ->
+		{
+			routeButton.setEnabled(true);
+			routeButton.setToolTipText(tooltip);
+		});
 	}
 
 	private void toggleSection(JButton button, JPanel contents)

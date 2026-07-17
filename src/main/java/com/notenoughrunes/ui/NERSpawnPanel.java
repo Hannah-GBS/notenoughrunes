@@ -9,7 +9,6 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -64,18 +63,7 @@ public class NERSpawnPanel extends JPanel
 				playerWP = null;
 			}
 
-			if (!Objects.equals(spawn.getCoords(), "") && !Objects.equals(spawn.getPlane(), "")) {
-				String[] shopCoords = spawn.getCoords().split(",");
-				int shopX = Integer.parseInt(shopCoords[0]);
-				int shopY = Integer.parseInt(shopCoords[1]);
-				int shopPlane = Integer.parseInt(spawn.getPlane());
-				spawnWP = new WorldPoint(shopX, shopY, shopPlane);
-
-			}
-			else
-			{
-				spawnWP = null;
-			}
+			spawnWP = NERSourceRouteUtil.parseWorldPoint(spawn.getCoords(), spawn.getPlane());
 
 			Plugin spPluginFound = null;
 			for (Plugin p : pluginManager.getPlugins())
