@@ -13,6 +13,8 @@ NER can look up item requirements directly from the Quest Helper panel
 
 
 ## Shortest Path integration
-Right click a Shop or Spawn item to get directions with the Shortest Path plugin
+Right click a Shop or Spawn item to get directions with the Shortest Path plugin, or use the Sources button to ask Shortest Path for a route to the closest eligible listed shop or ground spawn.
+
+Routes do not guarantee current shop stock, ground-item availability, or access requirements that are not represented in the source data. Drops and recipes are not included in closest-source routing.
 
 <img width="245" height="264" alt="image" src="https://github.com/user-attachments/assets/f029b95d-718e-4aac-bd81-291ee260f57a" />
