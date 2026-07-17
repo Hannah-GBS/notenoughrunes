@@ -21,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.eventbus.EventBus;
-import net.runelite.client.events.PluginMessage;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.ui.ColorScheme;
@@ -164,11 +163,6 @@ public class NERPanel extends PluginPanel
 		currentPanel = itemPanel;
 		add(itemPanel, BorderLayout.CENTER);
 		updateUI();
-	}
-
-	void clearShortestPath()
-	{
-		eventBus.post(new PluginMessage("shortestpath", "clear"));
 	}
 
 	public void displayItemById(int rawItemId)
