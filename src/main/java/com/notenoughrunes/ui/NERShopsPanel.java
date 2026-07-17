@@ -19,7 +19,6 @@ import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -139,18 +138,7 @@ public class NERShopsPanel extends JPanel
 						playerWP = null;
 					}
 
-					if (!Objects.equals(shop.getCoords(), "") && !Objects.equals(shop.getPlane(), "")) {
-						String[] shopCoords = shop.getCoords().split(",");
-						int shopX = Integer.parseInt(shopCoords[0]);
-						int shopY = Integer.parseInt(shopCoords[1]);
-						int shopPlane = Integer.parseInt(shop.getPlane());
-						shopWP = new WorldPoint(shopX, shopY, shopPlane);
-
-					}
-					else
-					{
-						shopWP = null;
-					}
+					shopWP = NERSourceRouteUtil.parseWorldPoint(shop.getCoords(), shop.getPlane());
 					Plugin spPluginFound = null;
 					for (Plugin p : pluginManager.getPlugins())
 					{
