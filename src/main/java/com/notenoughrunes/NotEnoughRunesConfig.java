@@ -84,4 +84,26 @@ public interface NotEnoughRunesConfig extends Config
 		return Collections.emptySet();
 	}
 
+	@ConfigItem(
+		keyName = "routeShopSources",
+		name = "Route shops",
+		description = "Include listed shops when routing to an item source",
+		position = 7
+	)
+	default boolean routeShopSources()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "routeGroundSpawnSources",
+		name = "Route ground spawns",
+		description = "Include listed ground spawns when routing to an item source",
+		position = 8
+	)
+	default boolean routeGroundSpawnSources()
+	{
+		return true;
+	}
+
 }
