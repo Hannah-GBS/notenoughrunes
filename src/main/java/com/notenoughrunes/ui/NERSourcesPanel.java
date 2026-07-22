@@ -284,8 +284,9 @@ class NERSourcesPanel extends JPanel
 			}
 			else
 			{
-				Set<WorldPoint> targets = buildRouteTargets(shops, spawns);
-				if (targets.isEmpty())
+				WorldPoint target = NERSourceRouteUtil.findClosest(
+					client.getLocalPlayer().getWorldLocation(), buildRouteTargets(shops, spawns));
+				if (target == null)
 				{
 					tooltip = "No valid enabled shop or ground-spawn locations are available.";
 				}
@@ -293,11 +294,11 @@ class NERSourcesPanel extends JPanel
 				{
 					if (requestRoute)
 					{
-						eventBus.post(new PluginMessage("shortestpath", "path", Map.of("target", targets)));
+						eventBus.post(new PluginMessage("shortestpath", "path", Map.of("target", target)));
 					}
 					tooltip = requestRoute
 						? "Route request sent to Shortest Path. Stock and access are not guaranteed."
-						: "Ask Shortest Path to route to an enabled listed shop or ground spawn. Stock and access are not guaranteed.";
+						: "Ask Shortest Path to route to the nearest enabled listed shop or ground spawn. Stock and access are not guaranteed.";
 				}
 			}
 

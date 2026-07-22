@@ -1,5 +1,6 @@
 package com.notenoughrunes.ui;
 
+import java.util.Set;
 import net.runelite.api.coords.WorldPoint;
 import org.junit.Test;
 
@@ -8,6 +9,18 @@ import static org.junit.Assert.assertNull;
 
 public class NERSourceRouteUtilTest
 {
+	@Test
+	public void findsClosestSourceBeforeRouting()
+	{
+		WorldPoint player = new WorldPoint(3145, 3445, 0);
+		WorldPoint cooksGuildSpawn = new WorldPoint(3142, 3447, 0);
+		WorldPoint lumbridgeShop = new WorldPoint(3219, 9623, 0);
+
+		assertEquals(cooksGuildSpawn,
+			NERSourceRouteUtil.findClosest(player, Set.of(lumbridgeShop, cooksGuildSpawn)));
+		assertNull(NERSourceRouteUtil.findClosest(player, Set.of()));
+	}
+
 	@Test
 	public void parsesValidWorldPoints()
 	{

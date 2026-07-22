@@ -1,5 +1,7 @@
 package com.notenoughrunes.ui;
 
+import java.util.Comparator;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.runelite.api.Constants;
 import net.runelite.api.coords.WorldPoint;
@@ -8,6 +10,15 @@ final class NERSourceRouteUtil
 {
 	private NERSourceRouteUtil()
 	{
+	}
+
+	@Nullable
+	static WorldPoint findClosest(WorldPoint origin, Set<WorldPoint> targets)
+	{
+		return targets.stream()
+			.min(Comparator.comparingInt((WorldPoint target) -> origin.distanceTo2D(target))
+				.thenComparingInt(target -> Math.abs(origin.getPlane() - target.getPlane())))
+			.orElse(null);
 	}
 
 	@Nullable
