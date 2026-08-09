@@ -67,6 +67,7 @@ class NERItemPanel extends JPanel
 
 	@Getter
 	private final NERUsesPanel usesPanel;
+	private boolean showingUses;
 	public NERItem selectedItem;
 	private final ClientThread clientThread;
 
@@ -83,6 +84,7 @@ class NERItemPanel extends JPanel
 		this.usesPanel = new NERUsesPanel(selectedItem, itemManager, dataProvider, clientThread, mainPanel, config, client, eventBus, pluginManager);
 		this.clientThread = clientThread;
 		this.itemManager = itemManager;
+		this.showingUses = showUses;
 
 		log.debug("Creating item panel: " + selectedItem.getInfoItem().getName());
 
@@ -204,7 +206,7 @@ class NERItemPanel extends JPanel
 				if (e.getStateChange() == ItemEvent.SELECTED)
 				{
 					itemGroup.setSelectedVersion((String) comboBox.getSelectedItem());
-					mainPanel.displayItem(itemGroup);
+					mainPanel.displayItem(itemGroup, showingUses);
 				}
 			});
 
@@ -228,6 +230,16 @@ class NERItemPanel extends JPanel
 		tabGroup.addTab(sourcesTab);
 		tabGroup.addTab(usesTab);
 		tabGroup.select(showUses ? usesTab : sourcesTab);
+
+		sourcesTab.setOnSelectEvent(() -> {
+			showingUses = false;
+			return true;
+		});
+
+		usesTab.setOnSelectEvent(() -> {
+			showingUses = true;
+			return true;
+		});
 
 		JPanel tabContainer = new JPanel();
 		tabContainer.setLayout(new BorderLayout());
