@@ -49,6 +49,7 @@ public class NERPanel extends PluginPanel
 
 	@Getter
 	private final NERSearchResultsPanel searchResultsPanel;
+	private boolean showUses = false;
 
 	@Inject
 	private NERPanel(
@@ -156,20 +157,29 @@ public class NERPanel extends PluginPanel
 		searchBar.setEditable(true);
 	}
 
-	void displayItem(NERItemGroup itemGroup)
+	void displayItem(NERItemGroup itemGroup) {
+		displayItem(itemGroup, false);
+	}
+
+	void displayItem(NERItemGroup itemGroup, boolean showUses)
 	{
-		itemPanel = new NERItemPanel(itemGroup, itemManager, dataProvider, clientThread, this, config, client, eventBus, pluginManager);
+		itemPanel = new NERItemPanel(itemGroup, itemManager, dataProvider, clientThread, this, config, client, eventBus, pluginManager, showUses);
 		remove(currentPanel);
 		currentPanel = itemPanel;
 		add(itemPanel, BorderLayout.CENTER);
 		updateUI();
 	}
 
-	public void displayItemById(int rawItemId)
+	public void displayItemById(int rawItemId) {
+		displayItemById(rawItemId, false);
+	}
+
+	public void displayItemById(int rawItemId, boolean showUses)
 	{
 		clientThread.invokeLater(() ->
 		{
 			int itemId = itemManager.canonicalize(rawItemId);
+			this.showUses = showUses;
 			dataProvider.executeSingle(new ItemByIDQuery(itemId), this::getNerItem);
 		});
 	}
@@ -200,7 +210,7 @@ public class NERPanel extends PluginPanel
 				}).collect(Collectors.toList());
 
 				NERItemGroup itemGroup = new NERItemGroup(itemInfo.getGroup(), itemInfo.getVersion(), nerItems);
-				SwingUtilities.invokeLater(() -> displayItem(itemGroup));
+				SwingUtilities.invokeLater(() -> displayItem(itemGroup, showUses));
 			})
 		);
 	}

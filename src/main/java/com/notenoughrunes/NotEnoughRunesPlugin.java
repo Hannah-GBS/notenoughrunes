@@ -215,7 +215,12 @@ public class NotEnoughRunesPlugin extends Plugin
 			Object itemId = data.getOrDefault("itemId", null);
 
 			if (itemId instanceof Integer) {
-				nerPanel.displayItemById((int) itemId);
+				if (data.get("openUses") instanceof Boolean) {
+					nerPanel.displayItemById((int) itemId, (boolean) data.get("openUses"));
+				} else {
+					nerPanel.displayItemById((int) itemId);
+				}
+
 				SwingUtilities.invokeLater(() -> clientToolbar.openPanel(navButton));
 			} else {
 				log.error("Invalid type sent to displayItemById event, expected Integer");

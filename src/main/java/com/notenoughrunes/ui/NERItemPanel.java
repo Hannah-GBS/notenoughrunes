@@ -73,7 +73,7 @@ class NERItemPanel extends JPanel
 	private final ItemManager itemManager;
 
 
-	NERItemPanel(NERItemGroup itemGroup, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel, NotEnoughRunesConfig config, Client client, EventBus eventBus, PluginManager pluginManager)
+	NERItemPanel(NERItemGroup itemGroup, ItemManager itemManager, H2DataProvider dataProvider, ClientThread clientThread, NERPanel mainPanel, NotEnoughRunesConfig config, Client client, EventBus eventBus, PluginManager pluginManager, boolean showUses)
 	{
 		Optional<NERItem> searchedItemOpt = itemGroup.getItems().stream().filter((groupItem) -> Objects.equals(groupItem.getInfoItem().getVersion(), itemGroup.getSelectedVersion())).findFirst();
 		Optional<NERItem> defaultItemForGroup = itemGroup.getItems().stream().filter((groupItem) -> groupItem.getInfoItem().isDefaultVersion()).findFirst();
@@ -227,7 +227,7 @@ class NERItemPanel extends JPanel
 		tabGroup.setBorder(new EmptyBorder(0, 0, 0, 0));
 		tabGroup.addTab(sourcesTab);
 		tabGroup.addTab(usesTab);
-		tabGroup.select(sourcesTab);
+		tabGroup.select(showUses ? usesTab : sourcesTab);
 
 		JPanel tabContainer = new JPanel();
 		tabContainer.setLayout(new BorderLayout());
