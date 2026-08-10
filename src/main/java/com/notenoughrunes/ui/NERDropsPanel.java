@@ -1,5 +1,6 @@
 package com.notenoughrunes.ui;
 
+import com.notenoughrunes.NotEnoughRunesConfig;
 import com.notenoughrunes.RarityParser;
 import com.notenoughrunes.types.NERDropItem;
 import com.notenoughrunes.types.NERDropSource;
@@ -10,6 +11,9 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.font.TextAttribute;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
@@ -20,13 +24,20 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.client.eventbus.EventBus;
+import net.runelite.client.events.PluginMessage;
+import net.runelite.client.plugins.Plugin;
+import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.util.ImageUtil;
 
@@ -76,7 +87,7 @@ public class NERDropsPanel extends JPanel
 		}
 	));
 
-	public NERDropsPanel(NERDropItem dropItem)
+	public NERDropsPanel(NERDropItem dropItem, EventBus eventBus, PluginManager pluginManager, NotEnoughRunesConfig config)
 	{
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -142,12 +153,74 @@ public class NERDropsPanel extends JPanel
 				gbc.fill = GridBagConstraints.BOTH;
 				gbc.insets = new Insets(4, 0, 4, 0);
 
-//				JSeparator separator = new JSeparator(JSeparator.HORIZONTAL);
-//				separator.setBackground(ColorScheme.LIGHT_GRAY_COLOR);
-//				separator.setPreferredSize(new Dimension(1, 2));
-//
-//				dropPanel.add(separator, gbc);
-//				gbc.gridy++;
+				boolean bmePluginEnabled = false;
+				for (Plugin p : pluginManager.getPlugins())
+				{
+					if (p.getClass().getName().equals("com.bettermonsterexamine.BetterMonsterExaminePlugin"))
+					{
+						bmePluginEnabled = pluginManager.isPluginActive(p);
+						break;
+					}
+				}
+
+				if (config.bmeNPCLookup() && bmePluginEnabled && dropSource.getDropType().equals("combat")) {
+					JPopupMenu menu = new JPopupMenu("Menu");
+
+					JMenuItem betterMonsterExamineMenu = new JMenuItem(new AbstractAction("Better Monster Examine")
+					{
+						@Override
+						public void actionPerformed(ActionEvent e)
+						{
+							Map<String, Object> data = new HashMap<>();
+							// Remove (eg) "#MVP" or "(Tarn's Lair)" from NPC names
+							String name = dropSource.getSource()
+								.split("#")[0]
+								.split(" \\(")[0];
+							int level = Integer.parseInt(dropSource.getDropLevel().split(",")[0]);
+							data.put("name", name);
+							data.put("level", level);
+							data.put("tab", "drops");
+							eventBus.post(new PluginMessage("bettermonsterexamine", "displayMonster", data));
+						}
+					});
+					menu.add(betterMonsterExamineMenu);
+
+					dropPanel.addMouseListener(new MouseAdapter()
+					{
+						@Override
+						public void mouseClicked(MouseEvent e)
+						{
+							if (e.getClickCount() == 1)
+							{
+								menu.show(dropPanel, e.getX(), e.getY());
+							}
+						}
+					});
+
+					dropType.addMouseListener(new MouseAdapter()
+					{
+						@Override
+						public void mouseClicked(MouseEvent e)
+						{
+							if (e.getClickCount() == 1)
+							{
+								menu.show(dropType, e.getX(), e.getY());
+							}
+						}
+					});
+
+					rarityLabel.addMouseListener(new MouseAdapter()
+					{
+						@Override
+						public void mouseClicked(MouseEvent e)
+						{
+							if (e.getClickCount() == 1)
+							{
+								menu.show(rarityLabel, e.getX(), e.getY());
+							}
+						}
+					});
+				}
 
 				container.add(dropPanel);
 				add(container);

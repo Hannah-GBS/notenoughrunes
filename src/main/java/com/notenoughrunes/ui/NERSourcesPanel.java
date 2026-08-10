@@ -166,7 +166,7 @@ class NERSourcesPanel extends JPanel
 
 			case DROPS:
 				if (!dropSources.isEmpty()) {
-					sectionItems.add(new NERDropsPanel(new NERDropItem(nerItem.getInfoItem().getName(), nerItem.getInfoItem().getVersion(), dropSources)));
+					sectionItems.add(new NERDropsPanel(new NERDropItem(nerItem.getInfoItem().getName(), nerItem.getInfoItem().getVersion(), dropSources), eventBus, pluginManager, config));
 				}
 				break;
 

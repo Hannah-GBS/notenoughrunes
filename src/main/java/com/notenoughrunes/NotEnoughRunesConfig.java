@@ -8,6 +8,7 @@ import java.util.Set;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.ConfigSection;
 
 @ConfigGroup("notenoughrunes")
 public interface NotEnoughRunesConfig extends Config
@@ -84,11 +85,19 @@ public interface NotEnoughRunesConfig extends Config
 		return Collections.emptySet();
 	}
 
+	@ConfigSection(
+		name = "Integrations",
+		description = "Integrations with other Plugins",
+		position = 1
+	)
+	String integrationSection = "integrationSection";
+
 	@ConfigItem(
 		keyName = "routeShopSources",
 		name = "Route shops",
 		description = "Include listed shops when routing to an item source",
-		position = 7
+		position = 7,
+		section = integrationSection
 	)
 	default boolean routeShopSources()
 	{
@@ -99,9 +108,22 @@ public interface NotEnoughRunesConfig extends Config
 		keyName = "routeGroundSpawnSources",
 		name = "Route ground spawns",
 		description = "Include listed ground spawns when routing to an item source",
-		position = 8
+		position = 8,
+		section = integrationSection
 	)
 	default boolean routeGroundSpawnSources()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "bmeNPCLookup",
+		name = "Better Monster Examine",
+		description = "Click NPCs in the Drops section to look them up in Better Monster Examine. This requires the Better Monster Examine plugin to be installed and enabled",
+		position = 9,
+		section = integrationSection
+	)
+	default boolean bmeNPCLookup()
 	{
 		return true;
 	}
