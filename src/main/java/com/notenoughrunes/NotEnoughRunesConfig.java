@@ -88,7 +88,7 @@ public interface NotEnoughRunesConfig extends Config
 	@ConfigSection(
 		name = "Integrations",
 		description = "Integrations with other Plugins",
-		position = 1
+		position = 7
 	)
 	String integrationSection = "integrationSection";
 
@@ -96,7 +96,7 @@ public interface NotEnoughRunesConfig extends Config
 		keyName = "routeShopSources",
 		name = "Route shops",
 		description = "Include listed shops when routing to an item source",
-		position = 7,
+		position = 8,
 		section = integrationSection
 	)
 	default boolean routeShopSources()
@@ -108,7 +108,7 @@ public interface NotEnoughRunesConfig extends Config
 		keyName = "routeGroundSpawnSources",
 		name = "Route ground spawns",
 		description = "Include listed ground spawns when routing to an item source",
-		position = 8,
+		position = 9,
 		section = integrationSection
 	)
 	default boolean routeGroundSpawnSources()
@@ -120,7 +120,7 @@ public interface NotEnoughRunesConfig extends Config
 		keyName = "bmeNPCLookup",
 		name = "Better Monster Examine",
 		description = "Click NPCs in the Drops section to look them up in Better Monster Examine. This requires the Better Monster Examine plugin to be installed and enabled",
-		position = 9,
+		position = 10,
 		section = integrationSection
 	)
 	default boolean bmeNPCLookup()
