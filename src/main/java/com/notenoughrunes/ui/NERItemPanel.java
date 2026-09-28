@@ -254,7 +254,7 @@ class NERItemPanel extends JPanel
 	{
 		clientThread.invokeLater(() ->
 		{
-			int gePrice = itemManager.getItemPrice(infoItem.getItemID());
+			long gePrice = itemManager.getItemPrice(infoItem.getItemID());
 			ItemComposition comp = itemManager.getItemComposition(infoItem.getItemID());
 			int alchable = comp.getIntValue(ITEM_COMP_ALCHABLE_PARAM);
 			int haPrice = comp.getHaPrice();
